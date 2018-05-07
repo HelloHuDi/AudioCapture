@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:id="@+id/activity_first"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:padding="2dp">
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="playrecorder"
+        android:paddingLeft="3dp"
+        android:paddingRight="3dp"
+        android:text="播放"
+        />
+
+    <TextView
+        android:id="@+id/tv_sendmsg"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginTop="30dp"
+        android:layout_weight="8"
+        android:onClick="filerecord"
+        android:text="文件录音:"/>
+
+
+    <TextView
+        android:id="@+id/tv_press_send"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@android:color/darker_gray"
+        android:gravity="center"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:text="按下说话"
+        android:textColor="#70ffffff"
+        android:textSize="24sp"/>
+
+
+</LinearLayout>

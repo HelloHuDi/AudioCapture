@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <Button
+        style="@style/main_button_style"
+        android:onClick="onMediaRecorder"
+        android:text="调用MediaRecorder"/>
+
+    <Button
+        style="@style/main_button_style"
+        android:onClick="onAudioRecord"
+        android:text="调用AudioRecord"/>
+
+</LinearLayout>
