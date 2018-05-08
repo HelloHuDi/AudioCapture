@@ -6,32 +6,25 @@ import android.media.AudioRecord;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
-import android.media.MediaPlayer;
 import android.media.MediaRecorder;
-import android.os.Bundle;
-import android.os.Environment;
-import android.os.SystemClock;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
-import android.view.Window;
-import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class AudioRecordActivity extends AppCompatActivity implements View.OnClickListener {
+/**
+ * Created by hd on 2018/5/8 .
+ */
+public class AudioRecordModel extends AudioModel {
 
     public class AudioData {
         public ByteBuffer buffer; //存储原始音频数据的buffer
         public int size; //buffer大小
     }
-
 
     private int mBufferSizeInBytes = 0;//最小缓冲区
     private int mSampleRateInHz;//采样率
@@ -51,111 +44,44 @@ public class AudioRecordActivity extends AppCompatActivity implements View.OnCli
 
     private FileOutputStream ou = null;
 
-    private Button init, start, stop,play;
-    private File parent = null;
-    private boolean isStart = false;
+    private volatile AtomicBoolean record=new AtomicBoolean(false);
 
-    private File pathFile;
-
-    private TextView path;
+    public AudioRecordModel(AudioCallback callback) {
+        super(callback,"_audioRecord");
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        setContentView(R.layout.activity_audio_record);
-        init();
-        initListener();
-    }
-
-    //初始化
-    private void init() {
-        init = (Button) findViewById(R.id.init);
-        start = (Button) findViewById(R.id.start);
-        stop = (Button) findViewById(R.id.stop);
-        play = (Button) findViewById(R.id.play);
-        path = (TextView) findViewById(R.id.path);
-
-        //在此之前应该判断是否有内存卡
-        parent = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/ACC音频");
-        if (!parent.exists()) {
-            parent.mkdirs();//创建文件夹
+    void startRecord() {
+        int result = initialize(16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
+        if (result == 0) {//初始化成功
+            Recording();
         }
     }
 
-
-    //初始化监听器
-    private void initListener() {
-        init.setOnClickListener(this);
-        start.setOnClickListener(this);
-        stop.setOnClickListener(this);
-        play.setOnClickListener(this);
+    @Override
+    void stopRecord() {
+        record.set(false);
+        if (mAudioRecord != null)
+            mAudioRecord.stop();
+        if (mediaCodec != null)
+            mediaCodec.stop();
+        mBufferSizeInBytes = 0;
+        Log.d("tag","AudioRecordModel stop record");
     }
 
-    //录音以及编码
-    private void Recording() {
-        isStart = true;
-        File file = null;
-        int result = startRecord();//开始录音
-
-        if (result == 0) {
-            pathFile=file = new File(parent, String.valueOf(SystemClock.elapsedRealtime()) + ".aac");
-            final String a = file.getAbsolutePath();
-            try {
-                file.createNewFile();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        path.setText("文件存目路径：" + a);
-                    }
-                });
-
-            } catch (IOException e) {
-                e.printStackTrace();
-                Log.e("ZL", "创建文件出错");
-            }
+    @Override
+    void release() {
+        record.set(false);
+        if (mAudioRecord != null) {
+            mAudioRecord.release();
+            mAudioRecord = null;
         }
-
-        if (file != null) {
-            try {
-                ou = new FileOutputStream(file);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                Log.e("ZL", "创建输出流出错");
-            }
+        if (mediaCodec != null) {
+            mediaCodec.release();
+            mediaCodec = null;
         }
-
-        int result1 = createEncoder(); //创建编码器
-
-        if (result1 == 0) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(AudioRecordActivity.this, "创建编码器成功", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }
-
-        AudioData data = new AudioData();
-
-        while (isStart) {
-            int result2 = readData(data);
-            if (result2 == 0) {
-                encode(data);
-                Log.e("ZL", "录音成功");
-            }
-        }
-        stopRecord();  //停止录音
-        stopEncoder(); //停止编码
-
-        if (ou != null) {
-            try {
-                ou.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-                Log.e("ZL", "关闭输出流出错");
-            }
-        }
+        mBufferSizeInBytes = 0;
+        Log.d("tag","AudioRecordModel release");
 
     }
 
@@ -172,9 +98,55 @@ public class AudioRecordActivity extends AppCompatActivity implements View.OnCli
         return 0;
     }
 
+    //录音以及编码
+    private void Recording() {
+        record.set(true);
+        File file = null;
+        int result = startRecorder();//开始录音
+
+        if (result == 0) {
+            file = createAudioFile();
+        }
+        if (file != null) {
+            try {
+                ou = new FileOutputStream(file);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                Log.e("tag", "创建输出流出错");
+            }
+        }
+
+        int result1 = createEncoder(); //创建编码器
+
+        if (result1 == 0) {
+            Log.e("tag", "创建编码器成功");
+        }
+
+        AudioData data = new AudioData();
+
+        while (record.get()) {
+            int result2 = readData(data);
+            if (result2 == 0) {
+                encode(data);
+                Log.e("tag", "录音成功");
+            }
+        }
+
+        stopRecord();
+        release();
+
+        if (ou != null) {
+            try {
+                ou.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.e("tag", "关闭输出流出错");
+            }
+        }
+    }
 
     //开始录音
-    private int startRecord() {
+    private int startRecorder() {
         //说明其未进行初始化
         if (mBufferSizeInBytes == 0) {
             return -1;
@@ -218,25 +190,6 @@ public class AudioRecordActivity extends AppCompatActivity implements View.OnCli
         return 0;
     }
 
-    //停止录音
-    private int stopRecord() {
-        //说明其未进行初始化
-        if (mBufferSizeInBytes == 0) {
-            return -1;
-        }
-        //没有开始录音
-        if (mAudioRecord == null) {
-            return -1;
-        }
-        mAudioRecord.stop();
-        mAudioRecord.release();
-        mBufferSizeInBytes = 0;
-        mAudioRecord = null;
-        return 0;
-    }
-
-
-
     //创建编码器
     @SuppressLint("NewApi")
     private int createEncoder() {
@@ -245,8 +198,10 @@ public class AudioRecordActivity extends AppCompatActivity implements View.OnCli
             return 0;
         }
 
+        String type = "audio/mp4a-latm";
+
         try {
-            mediaCodec = MediaCodec.createEncoderByType("audio/mp4a-latm");
+            mediaCodec = MediaCodec.createEncoderByType(type);
         } catch (Exception e) {
             e.printStackTrace();
             return -1;
@@ -254,7 +209,7 @@ public class AudioRecordActivity extends AppCompatActivity implements View.OnCli
 
         // AAC 硬编码器
         MediaFormat format = new MediaFormat();
-        format.setString(MediaFormat.KEY_MIME, "audio/mp4a-latm");
+        format.setString(MediaFormat.KEY_MIME, type);
         format.setInteger(MediaFormat.KEY_CHANNEL_COUNT, 1); //声道数（这里是数字）
         format.setInteger(MediaFormat.KEY_SAMPLE_RATE, mSampleRateInHz); //采样率
         format.setInteger(MediaFormat.KEY_BIT_RATE, 9600); //码率
@@ -319,17 +274,6 @@ public class AudioRecordActivity extends AppCompatActivity implements View.OnCli
         return 0;
     }
 
-    //停止编码
-    @SuppressLint("NewApi")
-    private int stopEncoder() {
-        if (mediaCodec == null) {
-            return -1;
-        }
-        mediaCodec.stop();
-        mediaCodec.release();
-        return 0;
-    }
-
     /**
      * 添加头部信息
      * Add ADTS header at the beginning of each and every AAC packet. This is
@@ -366,109 +310,6 @@ public class AudioRecordActivity extends AppCompatActivity implements View.OnCli
         packet[5] = (byte) (((packetLen & 7) << 5) + 0x1F);
         packet[6] = (byte) 0xFC;
 
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            //初始化
-            case R.id.init: {
-                int result = initialize(16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
-                if (result == 0) {
-                    Toast.makeText(AudioRecordActivity.this, "初始化成功", Toast.LENGTH_SHORT).show();
-                }
-                break;
-            }
-
-            //开始录音
-            case R.id.start: {
-                if (!isStart) {
-                    Toast.makeText(AudioRecordActivity.this, "录音成功", Toast.LENGTH_SHORT).show();
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Recording();
-                        }
-                    }).start();
-                }
-                break;
-            }
-
-            //停止录音
-            case R.id.stop: {
-                isStart = false;
-                Toast.makeText(AudioRecordActivity.this, "停止录音", Toast.LENGTH_SHORT).show();
-                break;
-            }
-
-            //播放录音
-            case R.id.play: {
-                if(pathFile!=null) {
-                    isStart = false;
-                    Toast.makeText(AudioRecordActivity.this, "播放录音", Toast.LENGTH_SHORT).show();
-                   new Thread(new Runnable() {
-                       @Override
-                       public void run() {
-                           doPlay(pathFile);
-                       }
-                   }).start();
-                }
-                break;
-            }
-
-            default:
-                break;
-        }
-
-    }
-
-    private MediaPlayer mediaPlayer;
-
-    private void doPlay(File audioFile) {
-        try {
-            if(mediaPlayer!=null)stopPlayer();
-            //配置播放器 MediaPlayer
-            mediaPlayer = new MediaPlayer();
-            //设置声音文件
-            mediaPlayer.setDataSource(audioFile.getAbsolutePath());
-            //配置音量,中等音量
-            mediaPlayer.setVolume(1,1);
-            //播放是否循环
-            mediaPlayer.setLooping(false);
-
-            //设置监听回调 播放完毕
-            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mp) {
-                    stopPlayer();
-                }
-            });
-
-            mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-                @Override
-                public boolean onError(MediaPlayer mp, int what, int extra) {
-                    stopPlayer();
-                    Toast.makeText(AudioRecordActivity.this, "播放失败", Toast.LENGTH_SHORT).show();
-                    return true;
-                }
-            });
-
-            //设置播放
-            mediaPlayer.prepare();
-            mediaPlayer.start();
-
-            //异常处理，防止闪退
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            stopPlayer();
-        }
-
-    }
-
-    private void stopPlayer(){
-        mediaPlayer.release();
-        mediaPlayer=null;
     }
 
 }

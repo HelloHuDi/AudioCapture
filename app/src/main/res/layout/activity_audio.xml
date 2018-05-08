@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RadioGroup
+            android:id="@+id/rgAudio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <RadioButton
+                android:id="@+id/rbMediaRecorder"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="MediaRecorder"/>
+
+            <RadioButton
+                android:id="@+id/rbAudioRecord"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="10dp"
+                android:text="AudioRecord"/>
+        </RadioGroup>
+
+        <TextView
+            android:id="@+id/tvAudioFilePath"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:gravity="center|left"
+            android:text="地址"/>
+
+        <Button
+            style="@style/main_button_style"
+            android:onClick="start"
+            android:text="开始录音"/>
+
+        <Button
+            style="@style/main_button_style"
+            android:onClick="stop"
+            android:text="停止录音"/>
+
+        <Button
+            style="@style/main_button_style"
+            android:onClick="play"
+            android:text="播放"/>
+    </LinearLayout>
+</ScrollView>
