@@ -7,6 +7,21 @@
 <a href="" target="_blank"><img src="https://img.shields.io/badge/demo-v1.0-blue.svg"></img></a>
 </p>
 
+## dependencies :
+
+```
+implementation 'com.hd:audiocapture:1.0'
+```
+
+## code :
+
+### audio capture
+
+```
+AudioCapture.useAudioRecord().getCapture().startCapture(5000);//stop capture after 5 seconds
+```
+
+
 ### License
 
     Licensed under the Apache License, Version 2.0 (the "License");
