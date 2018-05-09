@@ -19,7 +19,7 @@ public class MediaRecorderCapture extends Capture {
             mMediaRecorder = new MediaRecorder();
             //创建录音文件
             File mRecorderFile = createAudioFile();
-            if(mRecorderFile==null){
+            if (mRecorderFile == null) {
                 Log.e("tag", "create file error");
                 return;
             }
@@ -49,7 +49,7 @@ public class MediaRecorderCapture extends Capture {
 
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e("tag","create media recorder error :"+e);
+            Log.e("tag", "create media recorder error :" + e);
         }
     }
 
@@ -61,7 +61,7 @@ public class MediaRecorderCapture extends Capture {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        Log.d("tag","MediaRecorderModel stop record");
+        Log.d("tag", "MediaRecorderCapture stop record");
     }
 
     @Override
@@ -70,6 +70,6 @@ public class MediaRecorderCapture extends Capture {
             mMediaRecorder.release();
             mMediaRecorder = null;
         }
-        Log.d("tag","MediaRecorderModel release");
+        Log.d("tag", "MediaRecorderCapture release");
     }
 }

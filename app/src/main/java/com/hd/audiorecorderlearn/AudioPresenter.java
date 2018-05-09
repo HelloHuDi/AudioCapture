@@ -28,7 +28,7 @@ public class AudioPresenter {
         if (Utils.isPermissionGranted(context) && Utils.isExternalStorageReady()) {
             this.context = context;
             this.callback = callback;
-        }else{
+        } else {
             throw new RuntimeException("permission not grant");
         }
     }

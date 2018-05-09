@@ -64,15 +64,10 @@ public class AudioActivity extends AppCompatActivity implements RadioGroup.OnChe
         audioPresenter.play(file);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void capturePath(final File file) {
         this.file = file;
-        runOnUiThread(new Runnable() {
-            @SuppressLint("SetTextI18n")
-            @Override
-            public void run() {
-                tvAudioFilePath.setText("音频地址==> "+file.getAbsolutePath());
-            }
-        });
+        runOnUiThread(() -> tvAudioFilePath.setText("音频地址==> " + file.getAbsolutePath()));
     }
 }

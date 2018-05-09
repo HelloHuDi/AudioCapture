@@ -43,7 +43,7 @@ public class AudioRecordCapture extends Capture {
 
     private FileOutputStream ou = null;
 
-    private volatile AtomicBoolean record=new AtomicBoolean(false);
+    private volatile AtomicBoolean record = new AtomicBoolean(false);
 
     @Override
     void startRecord() {
@@ -53,6 +53,7 @@ public class AudioRecordCapture extends Capture {
         }
     }
 
+    @SuppressLint("NewApi")
     @Override
     void stopRecord() {
         record.set(false);
@@ -61,9 +62,10 @@ public class AudioRecordCapture extends Capture {
         if (mediaCodec != null)
             mediaCodec.stop();
         mBufferSizeInBytes = 0;
-        Log.d("tag", "AudioRecordModel stop record");
+        Log.d("tag", "AudioRecordCapture stop record");
     }
 
+    @SuppressLint("NewApi")
     @Override
     void release() {
         record.set(false);
@@ -76,7 +78,7 @@ public class AudioRecordCapture extends Capture {
             mediaCodec = null;
         }
         mBufferSizeInBytes = 0;
-        Log.d("tag","AudioRecordModel release");
+        Log.d("tag", "AudioRecordCapture release");
     }
 
 

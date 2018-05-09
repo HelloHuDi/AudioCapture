@@ -3,7 +3,6 @@ package com.hd.audiocapture;
 /**
  * Created by hd on 2018/5/9 .
  * audio capture, create aac audio file
- *
  */
 public final class AudioCapture {
 
