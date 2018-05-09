@@ -1,7 +1,11 @@
 package com.hd.audiorecorderlearn;
 
 import android.content.Context;
-import android.util.Log;
+
+import com.hd.audiocapture.AudioCapture;
+import com.hd.audiocapture.Utils;
+import com.hd.audiocapture.callback.CaptureCallback;
+import com.hd.audiocapture.capture.Capture;
 
 import java.io.File;
 
@@ -14,38 +18,38 @@ public class AudioPresenter {
 
     public final static int AUDIORECORD_STYLE = 1;
 
+    private Capture capture;
+
     private Context context;
 
-    private MediaRecorderModel mediaRecorderModel;
+    private CaptureCallback callback;
 
-    private AudioRecordModel audioRecordModel;
-
-    private AudioModel audioModel;
-
-    public AudioPresenter(Context context, AudioCallback callback) {
-        this.context = context.getApplicationContext();
-        mediaRecorderModel = new MediaRecorderModel(callback);
-        audioRecordModel = new AudioRecordModel(callback);
+    AudioPresenter(Context context, CaptureCallback callback) {
+        if (Utils.isPermissionGranted(context) && Utils.isExternalStorageReady()) {
+            this.context = context;
+            this.callback = callback;
+        }else{
+            throw new RuntimeException("permission not grant");
+        }
     }
 
     public void initStyle(int style) {
         if (style == MEDIARECORDER_STYLE) {
-            audioModel = mediaRecorderModel;
+            capture = AudioCapture.useAudioRecord().setCaptureCallback(callback).getCapture();
         } else {
-            audioModel = audioRecordModel;
+            capture = AudioCapture.useMediaRecorder().setCaptureCallback(callback).getCapture();
         }
-        Log.d("tag","init recorder style :"+audioModel);
     }
 
     public void start() {
-        audioModel.start();
+        capture.startCapture(5000);
     }
 
     public void stop() {
-        audioModel.stop();
+        capture.stopCapture();
     }
 
     public void play(File file) {
-        new Player().asyncPlay(context, file);
+        capture.play(context, file);
     }
 }

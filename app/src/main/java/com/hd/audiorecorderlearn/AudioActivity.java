@@ -2,7 +2,6 @@ package com.hd.audiorecorderlearn;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -10,13 +9,15 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import com.hd.audiocapture.callback.CaptureCallback;
+
 import java.io.File;
 
 
 /**
  * Created by hd on 2018/5/8 .
  */
-public class AudioActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener, AudioCallback {
+public class AudioActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener, CaptureCallback {
     private TextView tvAudioFilePath;
     private File file;
     private AudioPresenter audioPresenter;
@@ -64,7 +65,7 @@ public class AudioActivity extends AppCompatActivity implements RadioGroup.OnChe
     }
 
     @Override
-    public void audioPath(@NonNull final File file) {
+    public void capturePath(final File file) {
         this.file = file;
         runOnUiThread(new Runnable() {
             @SuppressLint("SetTextI18n")

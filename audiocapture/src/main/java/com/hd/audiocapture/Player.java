@@ -1,4 +1,4 @@
-package com.hd.audiorecorderlearn;
+package com.hd.audiocapture;
 
 import android.content.Context;
 import android.media.AsyncPlayer;
@@ -12,7 +12,7 @@ import java.io.File;
 /**
  * Created by hd on 2018/5/8 .
  */
-public class Player {
+public final class Player {
 
     private MediaPlayer mediaPlayer;
 

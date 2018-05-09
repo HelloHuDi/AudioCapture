@@ -1,4 +1,4 @@
-package com.hd.audiorecorderlearn;
+package com.hd.audiocapture.capture;
 
 import android.media.MediaRecorder;
 import android.util.Log;
@@ -6,15 +6,11 @@ import android.util.Log;
 import java.io.File;
 
 /**
- * Created by hd on 2018/5/8 .
+ * Created by hd on 2018/5/9 .
  */
-public class MediaRecorderModel extends AudioModel {
+public class MediaRecorderCapture extends Capture {
 
     private MediaRecorder mMediaRecorder;
-
-    public MediaRecorderModel(AudioCallback callback) {
-        super(callback,"_mediaRecorder");
-    }
 
     @Override
     void startRecord() {
@@ -24,7 +20,7 @@ public class MediaRecorderModel extends AudioModel {
             //创建录音文件
             File mRecorderFile = createAudioFile();
             if(mRecorderFile==null){
-                Log.e("tag","create file error");
+                Log.e("tag", "create file error");
                 return;
             }
             //配置MediaRecorder

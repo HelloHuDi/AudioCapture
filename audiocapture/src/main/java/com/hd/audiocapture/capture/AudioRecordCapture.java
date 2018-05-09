@@ -1,4 +1,4 @@
-package com.hd.audiorecorderlearn;
+package com.hd.audiocapture.capture;
 
 import android.annotation.SuppressLint;
 import android.media.AudioFormat;
@@ -17,10 +17,9 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Created by hd on 2018/5/8 .
+ * Created by hd on 2018/5/9 .
  */
-public class AudioRecordModel extends AudioModel {
-
+public class AudioRecordCapture extends Capture {
     public class AudioData {
         public ByteBuffer buffer; //存储原始音频数据的buffer
         public int size; //buffer大小
@@ -46,10 +45,6 @@ public class AudioRecordModel extends AudioModel {
 
     private volatile AtomicBoolean record=new AtomicBoolean(false);
 
-    public AudioRecordModel(AudioCallback callback) {
-        super(callback,"_audioRecord");
-    }
-
     @Override
     void startRecord() {
         int result = initialize(16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
@@ -66,7 +61,7 @@ public class AudioRecordModel extends AudioModel {
         if (mediaCodec != null)
             mediaCodec.stop();
         mBufferSizeInBytes = 0;
-        Log.d("tag","AudioRecordModel stop record");
+        Log.d("tag", "AudioRecordModel stop record");
     }
 
     @Override
@@ -82,8 +77,8 @@ public class AudioRecordModel extends AudioModel {
         }
         mBufferSizeInBytes = 0;
         Log.d("tag","AudioRecordModel release");
-
     }
+
 
     //初始化音频采集参数
     private int initialize(int sampleRate, int channelCount, int bitSize) {
@@ -309,7 +304,6 @@ public class AudioRecordModel extends AudioModel {
         packet[4] = (byte) ((packetLen & 0x7FF) >> 3);
         packet[5] = (byte) (((packetLen & 7) << 5) + 0x1F);
         packet[6] = (byte) 0xFC;
-
     }
 
 }
