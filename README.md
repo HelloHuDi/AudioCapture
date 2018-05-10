@@ -1,10 +1,9 @@
 <p align="center">
-	<img width="72" height="72" src="art/audio_icon.png"/>
+	<img width="72" height="72" src="art/ic_launcher-web.png"/>
 </p>
 <h3 align="center">AudioCapture</h3>
 <p align="center">
 <a href="" target="_blank"><img src="https://img.shields.io/badge/release-v1.2-blue.svg"></img></a>
-<a href="" target="_blank"><img src="https://img.shields.io/badge/demo-v1.2-blue.svg"></img></a>
 </p>
 
 ## dependencies :
