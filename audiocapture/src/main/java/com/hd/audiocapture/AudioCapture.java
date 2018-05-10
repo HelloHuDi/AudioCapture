@@ -31,8 +31,8 @@ public final class AudioCapture {
         return with(CaptureType.AUDIO_RECORD_TYPE, CaptureType.MP4_FORMAT);
     }
 
-    public static CaptureManager with() {
-        return withMediaRecorderToMP4();
+    public static CaptureManager withDefault() {
+        return withAudioRecordToAAC();
     }
 
 }

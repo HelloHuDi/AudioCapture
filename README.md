@@ -3,14 +3,14 @@
 </p>
 <h3 align="center">AudioCapture</h3>
 <p align="center">
-<a href="" target="_blank"><img src="https://img.shields.io/badge/release-v1.0-blue.svg"></img></a>
-<a href="" target="_blank"><img src="https://img.shields.io/badge/demo-v1.0-blue.svg"></img></a>
+<a href="" target="_blank"><img src="https://img.shields.io/badge/release-v1.1-blue.svg"></img></a>
+<a href="" target="_blank"><img src="https://img.shields.io/badge/demo-v1.1-blue.svg"></img></a>
 </p>
 
 ## dependencies :
 
 ```
-implementation 'com.hd:audiocapture:1.0'
+implementation 'com.hd:audiocapture:1.1'
 ```
 
 ## code :
@@ -18,7 +18,7 @@ implementation 'com.hd:audiocapture:1.0'
 ### audio capture
 
 ```
-AudioCapture.useAudioRecord().getCapture().startCapture(5000);//stop capture after 5 seconds
+AudioCapture.withDefault().getCapture().startCapture(5000);//stop capture after 5 seconds
 ```
 
 
