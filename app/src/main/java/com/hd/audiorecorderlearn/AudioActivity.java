@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.hd.audiocapture.callback.CaptureCallback;
 
@@ -69,5 +70,10 @@ public class AudioActivity extends AppCompatActivity implements RadioGroup.OnChe
     public void capturePath(final File file) {
         this.file = file;
         runOnUiThread(() -> tvAudioFilePath.setText("音频地址==> " + file.getAbsolutePath()));
+    }
+
+    @Override
+    public void captureStatus(boolean success) {
+        runOnUiThread(()-> Toast.makeText(AudioActivity.this,"capture status :"+success,Toast.LENGTH_SHORT).show());
     }
 }

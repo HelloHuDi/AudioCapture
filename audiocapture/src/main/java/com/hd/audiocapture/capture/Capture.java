@@ -2,11 +2,13 @@ package com.hd.audiocapture.capture;
 
 import android.content.Context;
 import android.os.Environment;
-import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.util.Log;
 
-import com.hd.audiocapture.Player;
+import com.hd.audiocapture.CaptureConfig;
+import com.hd.audiocapture.CaptureType;
 import com.hd.audiocapture.callback.CaptureCallback;
+import com.hd.audiocapture.player.Player;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,20 +32,33 @@ public abstract class Capture {
 
     private File file;
 
+    CaptureConfig captureConfig;
+
+    String mode = CaptureType.AAC_FORMAT;
+
     CaptureCallback callback;
 
     File createAudioFile() {
         try {
-            if (file == null)
-                setCaptureName(String.valueOf(System.currentTimeMillis()));
+            file = captureConfig.getFile();
+            if (file == null) {
+                String name = captureConfig.getName();
+                name = TextUtils.isEmpty(name) ? String.valueOf(System.currentTimeMillis()) : name;
+                String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/recorderDemo/" + name + getFilePostfixName();
+                file = new File(path);
+            }
             boolean su = true;
             if (!file.getParentFile().exists()) {
                 su = file.getParentFile().mkdirs();
             }
+            if (file.exists()) {
+                su = file.delete();
+                Log.d("tag", "file is exists :" + file + "==" + su);
+            }
             if (su && file.createNewFile()) {
-                if (callback != null)
-                    callback.capturePath(file);
+                if (callback != null) callback.capturePath(file);
                 Log.d("tag", "create audio file success :" + file);
+                captureConfig.setFile(file);
                 return file;
             }
         } catch (IOException e) {
@@ -54,17 +69,10 @@ public abstract class Capture {
         return null;
     }
 
-    public void setAudioFile(@NonNull File file) {
-        this.file = file;
-    }
-
-    public void setCaptureName(@NonNull String name) {
-        String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/recorderDemo/" + name + ".aac";
-        setAudioFile(new File(path));
-    }
-
-    public void setCaptureCallback(@NonNull CaptureCallback callback) {
-        this.callback = callback;
+    public void setCaptureConfig(CaptureConfig captureConfig) {
+        this.captureConfig = captureConfig;
+        mode = captureConfig.getMode();
+        callback = captureConfig.getCaptureCallback();
     }
 
     public void startCapture() {
@@ -96,5 +104,18 @@ public abstract class Capture {
 
     public void play(Context context) {
         play(context, file);
+    }
+
+    private String getFilePostfixName() {
+        String postfix = ".aac";
+        switch (mode) {
+            case CaptureType.WAV_FORMAT:
+                postfix = ".wav";
+                break;
+            case CaptureType.MP4_FORMAT:
+                postfix = ".mp4";
+                break;
+        }
+        return postfix;
     }
 }

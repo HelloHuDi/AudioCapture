@@ -6,21 +6,33 @@ package com.hd.audiocapture;
  */
 public final class AudioCapture {
 
-    private static CaptureManager getCaptureManager(String tag) {
+    private static CaptureManager getCaptureManager(String tag, String mode) {
         CaptureType captureType = new CaptureType();
-        return captureType.of(tag);
+        return captureType.of(tag, mode);
     }
 
-    private static CaptureManager use(String tag) {
-        return getCaptureManager(tag);
+    private static CaptureManager with(String tag, String mode) {
+        return getCaptureManager(tag, mode);
     }
 
-    public static CaptureManager useAudioRecord() {
-        return use(CaptureType.MEDIA_RECORDER_TYPE);
+    public static CaptureManager withAudioRecordToAAC() {
+        return with(CaptureType.MEDIA_RECORDER_TYPE, CaptureType.AAC_FORMAT);
     }
 
-    public static CaptureManager useMediaRecorder() {
-        return use(CaptureType.AUDIO_RECORD_TYPE);
+    public static CaptureManager withAudioRecordToWAV() {
+        return with(CaptureType.MEDIA_RECORDER_TYPE, CaptureType.WAV_FORMAT);
+    }
+
+    public static CaptureManager withMediaRecorderToAAC() {
+        return with(CaptureType.AUDIO_RECORD_TYPE, CaptureType.AAC_FORMAT);
+    }
+
+    public static CaptureManager withMediaRecorderToMP4() {
+        return with(CaptureType.AUDIO_RECORD_TYPE, CaptureType.MP4_FORMAT);
+    }
+
+    public static CaptureManager with() {
+        return withMediaRecorderToMP4();
     }
 
 }

@@ -8,4 +8,6 @@ import java.io.File;
 public interface CaptureCallback {
 
     void capturePath(File file);
+
+    void captureStatus(boolean success);
 }

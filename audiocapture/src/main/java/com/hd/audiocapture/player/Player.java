@@ -1,4 +1,4 @@
-package com.hd.audiocapture;
+package com.hd.audiocapture.player;
 
 import android.content.Context;
 import android.media.AsyncPlayer;

@@ -12,33 +12,38 @@ import java.io.File;
  */
 public final class CaptureManager {
 
-    public static CaptureManager into(Capture capture) {
-        return new CaptureManager(capture);
+    public static CaptureManager into(Capture capture, String mode) {
+        return new CaptureManager(capture, mode);
     }
 
     private Capture capture;
 
-    private CaptureManager(@NonNull Capture capture) {
+    private CaptureConfig captureConfig;
+
+    private CaptureManager(@NonNull Capture capture, String mode) {
         this.capture = capture;
+        captureConfig = new CaptureConfig();
+        captureConfig.setMode(mode);
     }
 
     public CaptureManager setAudioFile(@NonNull File file) {
-        capture.setAudioFile(file);
+        captureConfig.setFile(file);
         return this;
     }
 
     public CaptureManager setCaptureName(@NonNull String name) {
-        capture.setCaptureName(name);
+        captureConfig.setName(name);
         return this;
     }
 
     public CaptureManager setCaptureCallback(@NonNull CaptureCallback callback) {
-        capture.setCaptureCallback(callback);
+        captureConfig.setCaptureCallback(callback);
         return this;
     }
 
     @NonNull
     public Capture getCapture() {
+        capture.setCaptureConfig(captureConfig);
         return capture;
     }
 

@@ -1,7 +1,10 @@
 package com.hd.audiocapture.capture;
 
 import android.media.MediaRecorder;
+import android.os.Build;
 import android.util.Log;
+
+import com.hd.audiocapture.CaptureType;
 
 import java.io.File;
 
@@ -15,38 +18,27 @@ public class MediaRecorderCapture extends Capture {
     @Override
     void startRecord() {
         try {
-            //创建MediaRecorder
             mMediaRecorder = new MediaRecorder();
-            //创建录音文件
             File mRecorderFile = createAudioFile();
             if (mRecorderFile == null) {
                 Log.e("tag", "create file error");
+                if(callback!=null)callback.captureStatus(false);
                 return;
             }
-            //配置MediaRecorder
-
-            //从麦克风采集
             mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-
-            //保存文件为MP4格式
-            mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS);
-
-            //所有android系统都支持的适中采样的频率
-            mMediaRecorder.setAudioSamplingRate(44100);
-
-            //通用的AAC编码格式
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                mMediaRecorder.setOutputFormat(CaptureType.AAC_FORMAT.equals(mode) ?//
+                     MediaRecorder.OutputFormat.AAC_ADTS : MediaRecorder.OutputFormat.MPEG_4);
+            } else {
+                mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+            }
+            mMediaRecorder.setAudioSamplingRate(captureConfig.getSamplingRate());
             mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-
-            //设置音质频率
-            mMediaRecorder.setAudioEncodingBitRate(96000);
-
-            //设置文件录音的位置
+            mMediaRecorder.setAudioEncodingBitRate(captureConfig.getBitrate());
             mMediaRecorder.setOutputFile(mRecorderFile.getAbsolutePath());
-
-            //开始录音
             mMediaRecorder.prepare();
             mMediaRecorder.start();
-
+            if(callback!=null)callback.captureStatus(true);
         } catch (Exception e) {
             e.printStackTrace();
             Log.e("tag", "create media recorder error :" + e);

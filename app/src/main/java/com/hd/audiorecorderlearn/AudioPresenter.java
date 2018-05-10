@@ -35,9 +35,9 @@ public class AudioPresenter {
 
     public void initStyle(int style) {
         if (style == MEDIARECORDER_STYLE) {
-            capture = AudioCapture.useAudioRecord().setCaptureCallback(callback).getCapture();
+            capture = AudioCapture.withMediaRecorderToMP4().setCaptureCallback(callback).getCapture();
         } else {
-            capture = AudioCapture.useMediaRecorder().setCaptureCallback(callback).getCapture();
+            capture = AudioCapture.withAudioRecordToAAC().setCaptureCallback(callback).getCapture();
         }
     }
 
