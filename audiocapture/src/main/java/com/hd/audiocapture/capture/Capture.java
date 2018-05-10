@@ -92,6 +92,7 @@ public abstract class Capture {
     }
 
     public void stopCapture() {
+        captureConfig.setFile(null);
         mExecutorService.submit(() -> {
             stopRecord();
             release();
