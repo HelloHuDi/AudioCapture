@@ -16,6 +16,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by hd on 2018/5/9 .
@@ -27,10 +28,14 @@ public abstract class Capture {
     abstract void stopRecord();
 
     abstract void release();
+    
+    private final String TAG = Capture.class.getSimpleName();
 
     private ExecutorService mExecutorService = Executors.newFixedThreadPool(2);
 
     private File file;
+
+    AtomicBoolean record = new AtomicBoolean(false);
 
     CaptureConfig captureConfig;
 
@@ -53,20 +58,19 @@ public abstract class Capture {
             }
             if (file.exists()) {
                 su = file.delete();
-                Log.d("tag", "file is exists :" + file + "==" + su);
+                Log.d(TAG, "file is exists :" + file + "==" + su);
             }
             if (su && file.createNewFile()) {
-                if (callback != null)
-                    callback.capturePath(file);
-                Log.d("tag", "create audio file success :" + file);
+                if (callback != null) callback.capturePath(file);
+                Log.d(TAG, "create audio file success :" + file);
                 captureConfig.setFile(file);
                 return file;
             }
         } catch (IOException e) {
             e.printStackTrace();
-            Log.d("tag", "create audio file error :" + e);
+            Log.d(TAG, "create audio file error :" + e);
         }
-        Log.d("tag", "create audio file failed ");
+        Log.d(TAG, "create audio file failed ");
         return null;
     }
 
@@ -93,6 +97,7 @@ public abstract class Capture {
     }
 
     public void stopCapture() {
+        record.set(false);
         captureConfig.setFile(null);
         mExecutorService.submit(() -> {
             stopRecord();
@@ -109,13 +114,19 @@ public abstract class Capture {
     }
 
     private String getFilePostfixName() {
-        String postfix = ".aac";
+        String postfix;
         switch (mode) {
+            case CaptureType.AAC_FORMAT:
+                postfix = ".aac";
+                break;
             case CaptureType.WAV_FORMAT:
                 postfix = ".wav";
                 break;
             case CaptureType.MP4_FORMAT:
                 postfix = ".mp4";
+                break;
+            default:
+                postfix = "." + mode;
                 break;
         }
         return postfix;

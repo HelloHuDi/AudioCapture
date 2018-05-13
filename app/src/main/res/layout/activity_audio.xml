@@ -31,26 +31,43 @@
         </RadioGroup>
 
         <TextView
+            android:id="@+id/tvAudioState"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:gravity="center|left"
+            android:text="captureState"/>
+
+
+        <TextView
             android:id="@+id/tvAudioFilePath"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:gravity="center|left"
-            android:text="地址"/>
+            android:text="filePath"/>
+
+        <TextView
+            android:id="@+id/tvAudioVolume"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:gravity="center|left"
+            android:text="audioVolume"/>
 
         <Button
             style="@style/main_button_style"
             android:onClick="start"
-            android:text="开始录音"/>
+            android:text="start capture"/>
 
         <Button
             style="@style/main_button_style"
             android:onClick="stop"
-            android:text="停止录音"/>
+            android:text="stop capture"/>
 
         <Button
             style="@style/main_button_style"
             android:onClick="play"
-            android:text="播放"/>
+            android:text="play audio"/>
     </LinearLayout>
 </ScrollView>

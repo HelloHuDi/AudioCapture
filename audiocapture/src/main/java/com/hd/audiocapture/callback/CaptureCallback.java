@@ -1,5 +1,7 @@
 package com.hd.audiocapture.callback;
 
+import com.hd.audiocapture.CaptureState;
+
 import java.io.File;
 
 /**
@@ -9,5 +11,7 @@ public interface CaptureCallback {
 
     void capturePath(File file);
 
-    void captureStatus(boolean success);
+    void captureStatus(CaptureState state);
+
+    void captureVolume(double volume);
 }

@@ -1,5 +1,7 @@
 package com.hd.audiocapture;
 
+import android.media.AudioFormat;
+
 import com.hd.audiocapture.callback.CaptureCallback;
 
 import java.io.File;
@@ -13,7 +15,7 @@ public class CaptureConfig {
     private File file;
     private int samplingRate = 44100;
     private int channelCount = 1;
-    private int bitrate = 9600;
+    private int bitrate = AudioFormat.ENCODING_PCM_16BIT;
     private CaptureCallback captureCallback;
 
     @Override

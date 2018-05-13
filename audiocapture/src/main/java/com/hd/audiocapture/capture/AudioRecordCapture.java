@@ -1,10 +1,10 @@
 package com.hd.audiocapture.capture;
 
-import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.util.Log;
 
+import com.hd.audiocapture.CaptureState;
 import com.hd.audiocapture.CaptureType;
 import com.hd.audiocapture.writer.AccFileWriter;
 import com.hd.audiocapture.writer.AudioFileWriter;
@@ -15,7 +15,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 /**
  * Created by hd on 2018/5/9 .
@@ -24,8 +25,6 @@ public class AudioRecordCapture extends Capture {
 
     private final String TAG = AudioRecordCapture.class.getSimpleName();
 
-    private volatile AtomicBoolean record = new AtomicBoolean(false);
-
     @Override
     void startRecord() {
         if (initFile() && initAudioRecord()) {
@@ -33,50 +32,70 @@ public class AudioRecordCapture extends Capture {
             startReadData();
         } else {
             if (callback != null)
-                callback.captureStatus(false);
+                callback.captureStatus(CaptureState.FAILED);
         }
     }
 
     @Override
     void stopRecord() {
-        record.set(false);
-        if (audioRecord != null)
+        if (audioFileWriter != null) {
+            boolean success = audioFileWriter.stop();
+            Log.d(TAG, "writer close complete :" + success);
+        }
+        if (audioRecord != null) {
             audioRecord.stop();
+        }
         if (mDataOutputStream != null) {
             try {
                 mDataOutputStream.close();
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                mDataOutputStream = null;
             }
         }
-        Log.d("tag", "AudioRecordCapture stop record");
+        Log.d(TAG, "AudioRecordCapture stop record");
     }
 
     @Override
     void release() {
-        record.set(false);
-        if (audioRecord != null)
+        if (audioRecord != null) {
             audioRecord.release();
-        Log.d("tag", "AudioRecordCapture release");
+            audioRecord = null;
+            if (callback != null)
+                callback.captureStatus(CaptureState.COMPLETED);
+        }
+        Log.d(TAG, "AudioRecordCapture release");
     }
 
     private AudioRecord audioRecord;
 
     private boolean initAudioRecord() {
         int minBufferSize = AudioRecord.getMinBufferSize(captureConfig.getSamplingRate(), //
-                                                         AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
+                                                         captureConfig.getChannelCount(), captureConfig.getBitrate());
         if (minBufferSize == AudioRecord.ERROR_BAD_VALUE) {
             Log.e(TAG, "Invalid parameter !");
             return false;
         }
         audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, captureConfig.getSamplingRate(),//
-                                      AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, minBufferSize * 4);
+                                      captureConfig.getChannelCount(), captureConfig.getBitrate(), minBufferSize * 4);
         if (audioRecord.getState() == AudioRecord.STATE_UNINITIALIZED) {
             Log.e(TAG, "AudioRecord initialize fail !");
             return false;
         }
-        audioRecord.startRecording();
-        return true;
+        try {
+            audioRecord.startRecording();
+            if (audioRecord.getRecordingState() != AudioRecord.RECORDSTATE_RECORDING) {
+                Log.e(TAG, "unable to recordings,recording equipment may be occupied");
+                stopCapture();
+                return false;
+            }
+            return true;
+        } catch (Exception e) {
+            Log.e(TAG, "please check audio permission");
+            release();
+            return false;
+        }
     }
 
     private boolean initFile() {
@@ -110,6 +129,8 @@ public class AudioRecordCapture extends Capture {
     private static final int SAMPLES_PER_FRAME = 1024;
 
     private void startReadData() {
+        if (callback != null)
+            callback.captureStatus(CaptureState.CAPTURING);
         while (record.get()) {
             byte[] buffer = new byte[SAMPLES_PER_FRAME * 2];
             int ret = audioRecord.read(buffer, 0, buffer.length);
@@ -118,18 +139,32 @@ public class AudioRecordCapture extends Capture {
             } else if (ret == AudioRecord.ERROR_BAD_VALUE) {
                 Log.e(TAG, "Error ERROR_BAD_VALUE");
             } else {
-                boolean su = audioFileWriter.writeData(buffer, 0, buffer.length);
-                Log.d("TAG", "Audio captured: " + buffer.length + "==" + su);
+                if (ret <= 0) {
+                    Log.e(TAG, "read data length error ==>" + ret);
+                } else {
+                    getVolume(buffer, ret);
+                    boolean su = audioFileWriter.writeData(buffer, 0, buffer.length);
+                    Log.d(TAG, "Audio captured: " + buffer.length + "==" + su + "==" + ret);
+                }
             }
         }
-        boolean success = audioFileWriter.stop();
-        Log.d(TAG, "writer close complete :" + success);
-        try {
-            mDataOutputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            mDataOutputStream = null;
-        }
     }
+
+    private void getVolume(byte[] buffer, int ret) {
+        short[] sa = new short[ret / 2];
+        ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(sa);
+        getVolume(sa, sa.length);
+    }
+
+    private void getVolume(short[] buffer, int ret) {
+        long v = 0;
+        for (short aBuffer : buffer) {
+            v += aBuffer * aBuffer;
+        }
+        double mean = v / ret;
+        double volume = 10 * Math.log10(mean);
+        if (callback != null)
+            callback.captureVolume(volume);
+    }
+
 }

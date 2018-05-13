@@ -35,21 +35,24 @@ public class AudioPresenter {
 
     public void initStyle(int style) {
         if (style == MEDIARECORDER_STYLE) {
-            capture = AudioCapture.withMediaRecorderToMP4().setCaptureCallback(callback).getCapture();
+            capture = AudioCapture.withMediaRecorderToAAC().setCaptureCallback(callback).getCapture();
         } else {
-            capture = AudioCapture.withAudioRecordToWAV().setCaptureCallback(callback).getCapture();
+            capture = AudioCapture.withAudioRecordToAAC().setCaptureCallback(callback).getCapture();
         }
     }
 
     public void start() {
-        capture.startCapture(5000);
+        if (capture != null)
+            capture.startCapture(5000);
     }
 
     public void stop() {
-        capture.stopCapture();
+        if (capture != null)
+            capture.stopCapture();
     }
 
     public void play(File file) {
-        capture.play(context, file);
+        if (capture != null)
+            capture.play(context, file);
     }
 }

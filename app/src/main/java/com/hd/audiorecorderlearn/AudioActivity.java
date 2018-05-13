@@ -8,8 +8,8 @@ import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.hd.audiocapture.CaptureState;
 import com.hd.audiocapture.callback.CaptureCallback;
 
 import java.io.File;
@@ -19,7 +19,7 @@ import java.io.File;
  * Created by hd on 2018/5/8 .
  */
 public class AudioActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener, CaptureCallback {
-    private TextView tvAudioFilePath;
+    private TextView tvAudioFilePath, tvAudioVolume, tvAudioState;
     private File file;
     private AudioPresenter audioPresenter;
 
@@ -32,6 +32,8 @@ public class AudioActivity extends AppCompatActivity implements RadioGroup.OnChe
 
     private void init() {
         tvAudioFilePath = findViewById(R.id.tvAudioFilePath);
+        tvAudioVolume = findViewById(R.id.tvAudioVolume);
+        tvAudioState = findViewById(R.id.tvAudioState);
         ((RadioGroup) findViewById(R.id.rgAudio)).setOnCheckedChangeListener(this);
         audioPresenter = new AudioPresenter(this, this);
     }
@@ -69,11 +71,18 @@ public class AudioActivity extends AppCompatActivity implements RadioGroup.OnChe
     @Override
     public void capturePath(final File file) {
         this.file = file;
-        runOnUiThread(() -> tvAudioFilePath.setText("音频地址==> " + file.getAbsolutePath()));
+        runOnUiThread(() -> tvAudioFilePath.setText("filePath==> " + file.getAbsolutePath()));
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
-    public void captureStatus(boolean success) {
-        runOnUiThread(()-> Toast.makeText(AudioActivity.this,"capture status :"+success,Toast.LENGTH_SHORT).show());
+    public void captureStatus(CaptureState state) {
+        runOnUiThread(() -> tvAudioState.setText("captureState==> " + state));
+    }
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    public void captureVolume(double volume) {
+        runOnUiThread(() -> tvAudioVolume.setText("audioVolume==> " + volume));
     }
 }
