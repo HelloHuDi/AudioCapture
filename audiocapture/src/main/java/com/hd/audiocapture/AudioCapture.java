@@ -16,19 +16,19 @@ public final class AudioCapture {
     }
 
     public static CaptureManager withAudioRecordToAAC() {
-        return with(CaptureType.MEDIA_RECORDER_TYPE, CaptureType.AAC_FORMAT);
-    }
-
-    public static CaptureManager withAudioRecordToWAV() {
-        return with(CaptureType.MEDIA_RECORDER_TYPE, CaptureType.WAV_FORMAT);
-    }
-
-    public static CaptureManager withMediaRecorderToAAC() {
         return with(CaptureType.AUDIO_RECORD_TYPE, CaptureType.AAC_FORMAT);
     }
 
+    public static CaptureManager withAudioRecordToWAV() {
+        return with(CaptureType.AUDIO_RECORD_TYPE, CaptureType.WAV_FORMAT);
+    }
+
+    public static CaptureManager withMediaRecorderToAAC() {
+        return with(CaptureType.MEDIA_RECORDER_TYPE, CaptureType.AAC_FORMAT);
+    }
+
     public static CaptureManager withMediaRecorderToMP4() {
-        return with(CaptureType.AUDIO_RECORD_TYPE, CaptureType.MP4_FORMAT);
+        return with(CaptureType.MEDIA_RECORDER_TYPE, CaptureType.MP4_FORMAT);
     }
 
     public static CaptureManager withDefault() {

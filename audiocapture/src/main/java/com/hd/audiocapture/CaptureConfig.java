@@ -16,6 +16,11 @@ public class CaptureConfig {
     private int bitrate = 9600;
     private CaptureCallback captureCallback;
 
+    @Override
+    public String toString() {
+        return "CaptureConfig{" + "mode='" + mode + '\'' + ", name='" + name + '\'' + ", file=" + file + ", samplingRate=" + samplingRate + ", channelCount=" + channelCount + ", bitrate=" + bitrate + ", captureCallback=" + captureCallback + '}';
+    }
+
     public String getMode() {
         return mode;
     }

@@ -1,11 +1,7 @@
 package com.hd.audiocapture.player;
 
 import android.content.Context;
-import android.media.AsyncPlayer;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.net.Uri;
-import android.util.Log;
+import android.support.annotation.NonNull;
 
 import java.io.File;
 
@@ -14,54 +10,30 @@ import java.io.File;
  */
 public final class Player {
 
-    private MediaPlayer mediaPlayer;
+    private AudioPlayer audioPlayer;
 
-    private AsyncPlayer asyncPlayer;
-
-    public void asyncPlay(Context context,File audioFile){
-        stop();
-        asyncPlayer=new AsyncPlayer("player");
-        asyncPlayer.play(context.getApplicationContext(), Uri.fromFile(audioFile), false, AudioManager.STREAM_MUSIC);
+    public Player(Context context, @NonNull File audioFile) {
+        if (audioFile.getAbsolutePath().endsWith(".wav")) {
+            audioPlayer = new AudioTrackModel(context, audioFile);
+        } else {
+            audioPlayer = new MediaPlayerModel(context, audioFile);
+        }
     }
 
-    public void play(File audioFile) {
-        try {
-            if (mediaPlayer != null && mediaPlayer.isPlaying()) stop();
-            mediaPlayer = new MediaPlayer();
-            mediaPlayer.setDataSource(audioFile.getAbsolutePath());
-            mediaPlayer.setVolume(1, 1);
-            mediaPlayer.setLooping(false);
-            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mp) {
-                    stop();
-                }
-            });
-            mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-                @Override
-                public boolean onError(MediaPlayer mp, int what, int extra) {
-                    stop();
-                    Log.e("player", "play audio error");
-                    return true;
-                }
-            });
-            mediaPlayer.prepare();
-            mediaPlayer.start();
-        } catch (Exception e) {
-            e.printStackTrace();
-            stop();
-        }
+    public void asyncPlay() {
+        if (audioPlayer != null)
+            audioPlayer.asyncPlay();
+    }
 
+    public void play() {
+        if (audioPlayer != null)
+            audioPlayer.play();
     }
 
     public void stop() {
-        if(mediaPlayer!=null) {
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
-        if(asyncPlayer!=null){
-            asyncPlayer.stop();
-            asyncPlayer=null;
+        if (audioPlayer != null) {
+            audioPlayer.stop();
+            audioPlayer = null;
         }
     }
 }

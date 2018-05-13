@@ -67,7 +67,6 @@ public class WavFileWriter extends AudioFileWriter {
         mDataSize = 0;
         this.mDataOutputStream = mDataOutputStream;
         this.mFilepath = captureConfig.getFile().getAbsolutePath();
-
     }
 
     @Override

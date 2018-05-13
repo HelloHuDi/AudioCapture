@@ -49,7 +49,7 @@ public class AccFileWriter extends AudioFileWriter {
         bufferInfo = new MediaCodec.BufferInfo();
         mediaCodec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         mediaCodec.start();
-        return false;
+        return true;
     }
 
     private MediaCodec mediaCodec = null;

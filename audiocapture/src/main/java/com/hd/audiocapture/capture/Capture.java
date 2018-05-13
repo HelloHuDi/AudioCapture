@@ -56,7 +56,8 @@ public abstract class Capture {
                 Log.d("tag", "file is exists :" + file + "==" + su);
             }
             if (su && file.createNewFile()) {
-                if (callback != null) callback.capturePath(file);
+                if (callback != null)
+                    callback.capturePath(file);
                 Log.d("tag", "create audio file success :" + file);
                 captureConfig.setFile(file);
                 return file;
@@ -100,7 +101,7 @@ public abstract class Capture {
     }
 
     public void play(Context context, File file) {
-        new Player().asyncPlay(context, file);
+        new Player(context, file).asyncPlay();
     }
 
     public void play(Context context) {
