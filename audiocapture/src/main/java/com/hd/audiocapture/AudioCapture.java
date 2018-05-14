@@ -32,7 +32,7 @@ public final class AudioCapture {
     }
 
     public static CaptureManager withDefault() {
-        return withAudioRecordToAAC();
+        return withAudioRecordToWAV();
     }
 
 }

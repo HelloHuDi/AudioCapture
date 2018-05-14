@@ -157,6 +157,7 @@ public class AudioRecordCapture extends Capture {
     }
 
     private void getVolume(short[] buffer, int ret) {
+        calc1(buffer,0,ret);
         long v = 0;
         for (short aBuffer : buffer) {
             v += aBuffer * aBuffer;
@@ -165,6 +166,14 @@ public class AudioRecordCapture extends Capture {
         double volume = 10 * Math.log10(mean);
         if (callback != null)
             callback.captureVolume(volume);
+    }
+
+    private void calc1(short[] lin,int off,int len) {
+        int i,j;
+        for (i = 0; i < len; i++) {
+            j = lin[i+off];
+            lin[i+off] = (short)(j>>2);
+        }
     }
 
 }

@@ -3,13 +3,13 @@
 </p>
 <h3 align="center">AudioCapture</h3>
 <p align="center">
-<a href="" target="_blank"><img src="https://img.shields.io/badge/release-v1.4-blue.svg"></img></a>
+<a href="" target="_blank"><img src="https://img.shields.io/badge/release-v1.5-blue.svg"></img></a>
 </p>
 
 ## dependencies :
 
 ```
-implementation 'com.hd:audiocapture:1.4'
+implementation 'com.hd:audiocapture:1.5'
 ```
 
 ## code :

@@ -1,6 +1,7 @@
 package com.hd.audiorecorderlearn;
 
 import android.content.Context;
+import android.media.AudioManager;
 
 import com.hd.audiocapture.AudioCapture;
 import com.hd.audiocapture.Utils;
@@ -28,6 +29,11 @@ public class AudioPresenter {
         if (Utils.isPermissionGranted(context) && Utils.isExternalStorageReady()) {
             this.context = context;
             this.callback = callback;
+            AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+            audioManager.setSpeakerphoneOn(false);
+            audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, 0,
+                                         AudioManager.STREAM_VOICE_CALL);
+            audioManager.setMode(AudioManager.MODE_IN_CALL);
         } else {
             throw new RuntimeException("permission not grant");
         }
@@ -37,13 +43,13 @@ public class AudioPresenter {
         if (style == MEDIARECORDER_STYLE) {
             capture = AudioCapture.withMediaRecorderToAAC().setCaptureCallback(callback).getCapture();
         } else {
-            capture = AudioCapture.withAudioRecordToAAC().setCaptureCallback(callback).getCapture();
+            capture = AudioCapture.withAudioRecordToWAV().setCaptureCallback(callback).getCapture();
         }
     }
 
     public void start() {
         if (capture != null)
-            capture.startCapture(5000);
+            capture.startCapture(/*5000*/);
     }
 
     public void stop() {
