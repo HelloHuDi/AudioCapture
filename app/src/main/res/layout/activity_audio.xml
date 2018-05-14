@@ -17,17 +17,30 @@
             android:orientation="vertical">
 
             <RadioButton
-                android:id="@+id/rbMediaRecorder"
+                android:id="@+id/rbMediaRecorderMP4"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:text="MediaRecorder"/>
+                android:text="MediaRecorder MP4"/>
 
             <RadioButton
-                android:id="@+id/rbAudioRecord"
+                android:id="@+id/rbMediaRecorderAAC"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="MediaRecorder AAC"/>
+
+            <RadioButton
+                android:id="@+id/rbAudioRecordAAC"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="10dp"
-                android:text="AudioRecord"/>
+                android:text="AudioRecord AAC"/>
+
+            <RadioButton
+                android:id="@+id/rbAudioRecordWAV"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="10dp"
+                android:text="AudioRecord WAV"/>
         </RadioGroup>
 
         <TextView

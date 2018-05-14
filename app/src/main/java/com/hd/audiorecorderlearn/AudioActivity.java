@@ -42,13 +42,19 @@ public class AudioActivity extends AppCompatActivity implements RadioGroup.OnChe
     public void onCheckedChanged(RadioGroup group, int checkedId) {
         RadioButton radioButton = group.findViewById(checkedId);
         if (radioButton != null && radioButton.isChecked()) {
-            int style = AudioPresenter.MEDIARECORDER_STYLE;
+            int style = AudioPresenter.MEDIARECORDER_MP4_STYLE;
             switch (checkedId) {
-                case R.id.rbMediaRecorder:
-                    style = AudioPresenter.MEDIARECORDER_STYLE;
+                case R.id.rbMediaRecorderMP4:
+                    style = AudioPresenter.MEDIARECORDER_MP4_STYLE;
                     break;
-                case R.id.rbAudioRecord:
-                    style = AudioPresenter.AUDIORECORD_STYLE;
+                case R.id.rbMediaRecorderAAC:
+                    style = AudioPresenter.MEDIARECORDER_AAC_STYLE;
+                    break;
+                case R.id.rbAudioRecordAAC:
+                    style = AudioPresenter.AUDIORECORD_AAC_STYLE;
+                    break;
+                case R.id.rbAudioRecordWAV:
+                    style = AudioPresenter.AUDIORECORD_WAV_STYLE;
                     break;
             }
             audioPresenter.initStyle(style);

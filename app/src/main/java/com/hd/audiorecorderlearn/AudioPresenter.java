@@ -15,9 +15,13 @@ import java.io.File;
  */
 public class AudioPresenter {
 
-    public final static int MEDIARECORDER_STYLE = 0;
+    public final static int MEDIARECORDER_MP4_STYLE = 0;
 
-    public final static int AUDIORECORD_STYLE = 1;
+    public final static int MEDIARECORDER_AAC_STYLE = 1;
+
+    public final static int AUDIORECORD_AAC_STYLE = 2;
+
+    public final static int AUDIORECORD_WAV_STYLE = 3;
 
     private Capture capture;
 
@@ -31,8 +35,7 @@ public class AudioPresenter {
             this.callback = callback;
             AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
             audioManager.setSpeakerphoneOn(false);
-            audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, 0,
-                                         AudioManager.STREAM_VOICE_CALL);
+            audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, 0, AudioManager.STREAM_VOICE_CALL);
             audioManager.setMode(AudioManager.MODE_IN_CALL);
         } else {
             throw new RuntimeException("permission not grant");
@@ -40,10 +43,31 @@ public class AudioPresenter {
     }
 
     public void initStyle(int style) {
-        if (style == MEDIARECORDER_STYLE) {
-            capture = AudioCapture.withMediaRecorderToAAC().setCaptureCallback(callback).getCapture();
-        } else {
-            capture = AudioCapture.withAudioRecordToWAV().setCaptureCallback(callback).getCapture();
+        switch (style) {
+            case MEDIARECORDER_MP4_STYLE:
+                capture = AudioCapture.withMediaRecorderToMP4()//
+                                      .setCaptureName(System.currentTimeMillis() + "_medMp4")//
+                                      .setCaptureCallback(callback)//
+                                      .getCapture();
+                break;
+            case MEDIARECORDER_AAC_STYLE:
+                capture = AudioCapture.withMediaRecorderToAAC()//
+                                      .setCaptureName(System.currentTimeMillis() + "_medAAC")//
+                                      .setCaptureCallback(callback)//
+                                      .getCapture();//
+                break;
+            case AUDIORECORD_AAC_STYLE:
+                capture = AudioCapture.withAudioRecordToAAC()//
+                                      .setCaptureName(System.currentTimeMillis() + "_arAAC")//
+                                      .setCaptureCallback(callback)//
+                                      .getCapture();//
+                break;
+            case AUDIORECORD_WAV_STYLE:
+                capture = AudioCapture.withAudioRecordToWAV()//
+                                      .setCaptureName(System.currentTimeMillis() + "_arWAV")//
+                                      .setCaptureCallback(callback)//
+                                      .getCapture();//
+                break;
         }
     }
 
