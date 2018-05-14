@@ -6,6 +6,10 @@
 <a href="" target="_blank"><img src="https://img.shields.io/badge/release-v1.5-blue.svg"></img></a>
 </p>
 
+## screenshots:
+
+<img src="art/capture-gif.gif" width="280px" height="500px"/> 
+
 ## dependencies :
 
 ```
