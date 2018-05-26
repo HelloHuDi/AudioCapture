@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.hd.audiocapture.CaptureConfig;
+import com.hd.audiocapture.CaptureState;
 import com.hd.audiocapture.CaptureType;
 import com.hd.audiocapture.callback.CaptureCallback;
 import com.hd.audiocapture.player.Player;
@@ -49,7 +50,7 @@ public abstract class Capture {
             if (file == null) {
                 String name = captureConfig.getName();
                 name = TextUtils.isEmpty(name) ? String.valueOf(System.currentTimeMillis()) : name;
-                String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/recorderDemo/" + name + getFilePostfixName();
+                String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/AudioCapture/" + name + getFilePostfixName();
                 file = new File(path);
             }
             boolean su = true;
@@ -58,20 +59,30 @@ public abstract class Capture {
             }
             if (file.exists()) {
                 su = file.delete();
+                if(captureConfig.allowLog())
                 Log.d(TAG, "file is exists :" + file + "==" + su);
             }
             if (su && file.createNewFile()) {
                 if (callback != null) callback.capturePath(file);
+                if(captureConfig.allowLog())
                 Log.d(TAG, "create audio file success :" + file);
                 captureConfig.setFile(file);
                 return file;
             }
         } catch (IOException e) {
             e.printStackTrace();
+            if(captureConfig.allowLog())
             Log.d(TAG, "create audio file error :" + e);
         }
+        if(captureConfig.allowLog())
         Log.d(TAG, "create audio file failed ");
         return null;
+    }
+
+    void notAllowEnterNextStep() {
+        if (callback != null)
+            callback.captureStatus(CaptureState.FAILED);
+        cancelCapture();
     }
 
     public void setCaptureConfig(CaptureConfig captureConfig) {
@@ -85,7 +96,8 @@ public abstract class Capture {
     }
 
     public void startCapture(long duration) {
-        stopCapture();
+        if (callback != null) callback.captureStatus(CaptureState.PREPARE);
+        cancelCapture();
         mExecutorService.submit(this::startRecord);
         if (duration > 0)
             new Timer().schedule(new TimerTask() {
@@ -97,12 +109,9 @@ public abstract class Capture {
     }
 
     public void stopCapture() {
-        record.set(false);
-        captureConfig.setFile(null);
-        mExecutorService.submit(() -> {
-            stopRecord();
-            release();
-        });
+        cancelCapture();
+        if (callback != null)
+            callback.captureStatus(CaptureState.COMPLETED);
     }
 
     public void play(Context context, File file) {
@@ -111,6 +120,17 @@ public abstract class Capture {
 
     public void play(Context context) {
         play(context, file);
+    }
+
+    private void cancelCapture() {
+        if(record.get()) {
+            record.set(false);
+            mExecutorService.submit(() -> {
+                stopRecord();
+                release();
+            });
+        }
+        captureConfig.setFile(null);
     }
 
     private String getFilePostfixName() {

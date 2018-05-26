@@ -24,12 +24,14 @@ public class MediaRecorderCapture extends Capture {
             mMediaRecorder = new MediaRecorder();
             File mRecorderFile = createAudioFile();
             if (mRecorderFile == null) {
+                if(captureConfig.allowLog())
                 Log.e(TAG, "create file error");
-                if (callback != null)
-                    callback.captureStatus(CaptureState.FAILED);
+                notAllowEnterNextStep();
                 return;
             }
             record.set(true);
+            if (callback != null)
+                callback.captureStatus(CaptureState.START);
             mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                 mMediaRecorder.setOutputFormat(CaptureType.AAC_FORMAT.equals(mode) ?//
@@ -48,9 +50,9 @@ public class MediaRecorderCapture extends Capture {
             initVolumeThread();
         } catch (Exception e) {
             e.printStackTrace();
+            if(captureConfig.allowLog())
             Log.e(TAG, "create media recorder error :" + e);
-            if (callback != null)
-                callback.captureStatus(CaptureState.FAILED);
+            notAllowEnterNextStep();
         }
     }
 
@@ -63,6 +65,7 @@ public class MediaRecorderCapture extends Capture {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        if(captureConfig.allowLog())
         Log.d(TAG, "MediaRecorderCapture stop record");
     }
 
@@ -71,9 +74,8 @@ public class MediaRecorderCapture extends Capture {
         if (mMediaRecorder != null) {
             mMediaRecorder.release();
             mMediaRecorder = null;
-            if (callback != null)
-                callback.captureStatus(CaptureState.COMPLETED);
         }
+        if(captureConfig.allowLog())
         Log.d(TAG, "MediaRecorderCapture release");
     }
 
@@ -87,7 +89,7 @@ public class MediaRecorderCapture extends Capture {
                         if (callback != null)
                             callback.captureVolume(db);
                     }
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }

@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.hd.audiocapture.CaptureState;
 import com.hd.audiocapture.CaptureType;
+import com.hd.audiocapture.callback.CaptureStreamCallback;
 import com.hd.audiocapture.writer.AccFileWriter;
 import com.hd.audiocapture.writer.AudioFileWriter;
 import com.hd.audiocapture.writer.WavFileWriter;
@@ -31,8 +32,7 @@ public class AudioRecordCapture extends Capture {
             record.set(true);
             startReadData();
         } else {
-            if (callback != null)
-                callback.captureStatus(CaptureState.FAILED);
+            notAllowEnterNextStep();
         }
     }
 
@@ -40,6 +40,7 @@ public class AudioRecordCapture extends Capture {
     void stopRecord() {
         if (audioFileWriter != null) {
             boolean success = audioFileWriter.stop();
+            if(captureConfig.allowLog())
             Log.d(TAG, "writer close complete :" + success);
         }
         if (audioRecord != null) {
@@ -54,6 +55,7 @@ public class AudioRecordCapture extends Capture {
                 mDataOutputStream = null;
             }
         }
+        if(captureConfig.allowLog())
         Log.d(TAG, "AudioRecordCapture stop record");
     }
 
@@ -62,36 +64,40 @@ public class AudioRecordCapture extends Capture {
         if (audioRecord != null) {
             audioRecord.release();
             audioRecord = null;
-            if (callback != null)
-                callback.captureStatus(CaptureState.COMPLETED);
         }
+        if(captureConfig.allowLog())
         Log.d(TAG, "AudioRecordCapture release");
     }
 
     private AudioRecord audioRecord;
 
     private boolean initAudioRecord() {
+        if (callback != null) callback.captureStatus(CaptureState.START);
         int minBufferSize = AudioRecord.getMinBufferSize(captureConfig.getSamplingRate(), //
                                                          captureConfig.getChannelCount(), captureConfig.getBitrate());
         if (minBufferSize == AudioRecord.ERROR_BAD_VALUE) {
+            if(captureConfig.allowLog())
             Log.e(TAG, "Invalid parameter !");
             return false;
         }
         audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, captureConfig.getSamplingRate(),//
                                       captureConfig.getChannelCount(), captureConfig.getBitrate(), minBufferSize * 4);
         if (audioRecord.getState() == AudioRecord.STATE_UNINITIALIZED) {
+            if(captureConfig.allowLog())
             Log.e(TAG, "AudioRecord initialize fail !");
             return false;
         }
         try {
             audioRecord.startRecording();
             if (audioRecord.getRecordingState() != AudioRecord.RECORDSTATE_RECORDING) {
+                if(captureConfig.allowLog())
                 Log.e(TAG, "unable to recordings,recording equipment may be occupied");
                 stopCapture();
                 return false;
             }
             return true;
         } catch (Exception e) {
+            if(captureConfig.allowLog())
             Log.e(TAG, "please check audio permission");
             release();
             return false;
@@ -135,15 +141,22 @@ public class AudioRecordCapture extends Capture {
             byte[] buffer = new byte[SAMPLES_PER_FRAME * 2];
             int ret = audioRecord.read(buffer, 0, buffer.length);
             if (ret == AudioRecord.ERROR_INVALID_OPERATION) {
+                if(captureConfig.allowLog())
                 Log.e(TAG, "Error ERROR_INVALID_OPERATION");
             } else if (ret == AudioRecord.ERROR_BAD_VALUE) {
+                if(captureConfig.allowLog())
                 Log.e(TAG, "Error ERROR_BAD_VALUE");
             } else {
                 if (ret <= 0) {
+                    if(captureConfig.allowLog())
                     Log.e(TAG, "read data length error ==>" + ret);
                 } else {
                     getVolume(buffer, ret);
+                    if (callback != null && callback instanceof CaptureStreamCallback) {
+                        ((CaptureStreamCallback) callback).captureContentByte(buffer);
+                    }
                     boolean su = audioFileWriter.writeData(buffer, 0, buffer.length);
+                    if(captureConfig.allowLog())
                     Log.d(TAG, "Audio captured: " + buffer.length + "==" + su + "==" + ret);
                 }
             }

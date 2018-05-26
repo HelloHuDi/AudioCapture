@@ -9,9 +9,19 @@ import java.io.File;
  */
 public interface CaptureCallback {
 
+    /**
+     * capture audio file path
+     */
     void capturePath(File file);
 
+    /**
+     * capture state
+     */
     void captureStatus(CaptureState state);
 
+    /**
+     * real-time volume
+     */
     void captureVolume(double volume);
+
 }

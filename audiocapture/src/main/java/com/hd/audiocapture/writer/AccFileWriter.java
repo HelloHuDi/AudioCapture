@@ -164,5 +164,4 @@ public class AccFileWriter extends AudioFileWriter {
         packet[5] = (byte) (((packetLen & 7) << 5) + 0x1F);
         packet[6] = (byte) 0xFC;
     }
-
 }

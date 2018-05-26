@@ -11,6 +11,7 @@ import java.io.File;
  */
 public class CaptureConfig {
     private String mode = CaptureType.AAC_FORMAT;
+    private boolean log=true;
     private String name;
     private File file;
     private int samplingRate = 44100;
@@ -21,6 +22,14 @@ public class CaptureConfig {
     @Override
     public String toString() {
         return "CaptureConfig{" + "mode='" + mode + '\'' + ", name='" + name + '\'' + ", file=" + file + ", samplingRate=" + samplingRate + ", channelCount=" + channelCount + ", bitrate=" + bitrate + ", captureCallback=" + captureCallback + '}';
+    }
+
+    public boolean allowLog() {
+        return log;
+    }
+
+    public void setLog(boolean log) {
+        this.log = log;
     }
 
     public String getMode() {

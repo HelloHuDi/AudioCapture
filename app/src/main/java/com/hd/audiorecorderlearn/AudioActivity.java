@@ -2,23 +2,26 @@ package com.hd.audiorecorderlearn;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.hd.audiocapture.CaptureState;
-import com.hd.audiocapture.callback.CaptureCallback;
+import com.hd.audiocapture.callback.CaptureStreamCallback;
 
 import java.io.File;
+import java.util.Arrays;
 
 
 /**
  * Created by hd on 2018/5/8 .
  */
-public class AudioActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener, CaptureCallback {
+public class AudioActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener, CaptureStreamCallback {
     private TextView tvAudioFilePath, tvAudioVolume, tvAudioState;
     private File file;
     private AudioPresenter audioPresenter;
@@ -90,5 +93,10 @@ public class AudioActivity extends AppCompatActivity implements RadioGroup.OnChe
     @Override
     public void captureVolume(double volume) {
         runOnUiThread(() -> tvAudioVolume.setText("audioVolume==> " + volume));
+    }
+
+    @Override
+    public void captureContentByte(@NonNull byte[] content) {
+        Log.d("tag","===="+ Arrays.toString(content));
     }
 }

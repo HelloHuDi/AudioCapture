@@ -26,6 +26,11 @@ public final class CaptureManager {
         captureConfig.setMode(mode);
     }
 
+    public CaptureManager allowLog(boolean log) {
+        captureConfig.setLog(log);
+        return this;
+    }
+
     public CaptureManager setAudioFile(@NonNull File file) {
         captureConfig.setFile(file);
         return this;

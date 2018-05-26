@@ -9,9 +9,9 @@ import com.hd.audiocapture.capture.MediaRecorderCapture;
  */
 public final class CaptureType {
 
-    public final static String MEDIA_RECORDER_TYPE = "media_recorder";
+    final static String MEDIA_RECORDER_TYPE = "media_recorder";
 
-    public final static String AUDIO_RECORD_TYPE = "audio_record";
+    final static String AUDIO_RECORD_TYPE = "audio_record";
 
     public final static String AAC_FORMAT = "aac";
 
