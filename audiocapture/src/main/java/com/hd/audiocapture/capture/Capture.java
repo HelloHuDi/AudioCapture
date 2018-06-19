@@ -2,6 +2,7 @@ package com.hd.audiocapture.capture;
 
 import android.content.Context;
 import android.os.Environment;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -9,6 +10,7 @@ import com.hd.audiocapture.CaptureConfig;
 import com.hd.audiocapture.CaptureState;
 import com.hd.audiocapture.CaptureType;
 import com.hd.audiocapture.callback.CaptureCallback;
+import com.hd.audiocapture.callback.PlaybackProgressCallback;
 import com.hd.audiocapture.player.Player;
 
 import java.io.File;
@@ -29,7 +31,7 @@ public abstract class Capture {
     abstract void stopRecord();
 
     abstract void release();
-    
+
     private final String TAG = Capture.class.getSimpleName();
 
     private ExecutorService mExecutorService = Executors.newFixedThreadPool(2);
@@ -59,23 +61,24 @@ public abstract class Capture {
             }
             if (file.exists()) {
                 su = file.delete();
-                if(captureConfig.allowLog())
-                Log.d(TAG, "file is exists :" + file + "==" + su);
+                if (captureConfig.allowLog())
+                    Log.d(TAG, "file is exists :" + file + "==" + su);
             }
             if (su && file.createNewFile()) {
-                if (callback != null) callback.capturePath(file);
-                if(captureConfig.allowLog())
-                Log.d(TAG, "create audio file success :" + file);
+                if (callback != null)
+                    callback.capturePath(file);
+                if (captureConfig.allowLog())
+                    Log.d(TAG, "create audio file success :" + file);
                 captureConfig.setFile(file);
                 return file;
             }
         } catch (IOException e) {
             e.printStackTrace();
-            if(captureConfig.allowLog())
-            Log.d(TAG, "create audio file error :" + e);
+            if (captureConfig.allowLog())
+                Log.d(TAG, "create audio file error :" + e);
         }
-        if(captureConfig.allowLog())
-        Log.d(TAG, "create audio file failed ");
+        if (captureConfig.allowLog())
+            Log.d(TAG, "create audio file failed ");
         return null;
     }
 
@@ -96,7 +99,8 @@ public abstract class Capture {
     }
 
     public void startCapture(long duration) {
-        if (callback != null) callback.captureStatus(CaptureState.PREPARE);
+        if (callback != null)
+            callback.captureStatus(CaptureState.PREPARE);
         cancelCapture();
         mExecutorService.submit(this::startRecord);
         if (duration > 0)
@@ -114,16 +118,16 @@ public abstract class Capture {
             callback.captureStatus(CaptureState.COMPLETED);
     }
 
-    public void play(Context context, File file) {
-        new Player(context, file).asyncPlay();
+    public void play(Context context) {
+        play(context, null);
     }
 
-    public void play(Context context) {
-        play(context, file);
+    public void play(Context context, @Nullable PlaybackProgressCallback callback) {
+        new Player(context, file).play(callback);
     }
 
     private void cancelCapture() {
-        if(record.get()) {
+        if (record.get()) {
             record.set(false);
             mExecutorService.submit(() -> {
                 stopRecord();

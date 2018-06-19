@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.hd.audiocapture.CaptureState;
 import com.hd.audiocapture.callback.CaptureStreamCallback;
+import com.hd.audiocapture.callback.PlaybackProgressCallback;
 
 import java.io.File;
 import java.util.Arrays;
@@ -21,8 +22,8 @@ import java.util.Arrays;
 /**
  * Created by hd on 2018/5/8 .
  */
-public class AudioActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener, CaptureStreamCallback {
-    private TextView tvAudioFilePath, tvAudioVolume, tvAudioState;
+public class AudioActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener, CaptureStreamCallback, PlaybackProgressCallback {
+    private TextView tvAudioFilePath, tvAudioVolume, tvAudioState, tvAudioProgress;
     private File file;
     private AudioPresenter audioPresenter;
 
@@ -37,6 +38,7 @@ public class AudioActivity extends AppCompatActivity implements RadioGroup.OnChe
         tvAudioFilePath = findViewById(R.id.tvAudioFilePath);
         tvAudioVolume = findViewById(R.id.tvAudioVolume);
         tvAudioState = findViewById(R.id.tvAudioState);
+        tvAudioProgress = findViewById(R.id.tvAudioProgress);
         ((RadioGroup) findViewById(R.id.rgAudio)).setOnCheckedChangeListener(this);
         audioPresenter = new AudioPresenter(this, this);
     }
@@ -73,7 +75,14 @@ public class AudioActivity extends AppCompatActivity implements RadioGroup.OnChe
     }
 
     public void play(View view) {
-        audioPresenter.play(file);
+        audioPresenter.play(file, this);
+    }
+
+    @SuppressLint("SetTextI18n")
+    @Override
+    public void progress(long currentDuration, long maxDuration) {
+        runOnUiThread(() -> tvAudioProgress.setText("progress==> " + currentDuration + "===" + maxDuration//
+                                                            + "====" + (currentDuration * 1.0 / maxDuration) * 100 + "%"));
     }
 
     @SuppressLint("SetTextI18n")
@@ -97,6 +106,6 @@ public class AudioActivity extends AppCompatActivity implements RadioGroup.OnChe
 
     @Override
     public void captureContentByte(@NonNull byte[] content) {
-        Log.d("tag","===="+ Arrays.toString(content));
+        Log.d("tag", "====" + Arrays.toString(content));
     }
 }

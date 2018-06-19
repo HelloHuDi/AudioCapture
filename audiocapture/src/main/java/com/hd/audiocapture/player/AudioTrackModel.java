@@ -5,9 +5,11 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.hd.audiocapture.Utils;
+import com.hd.audiocapture.callback.PlaybackProgressCallback;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -34,6 +36,7 @@ public class AudioTrackModel extends AudioPlayer {
     private DataInputStream mDataInputStream;
     private boolean initCompleted;
     private volatile boolean mIsPlayStarted = false;
+    private PlaybackProgressCallback callback;
 
     public AudioTrackModel(Context context, @NonNull File audioFile) {
         super(context, audioFile);
@@ -44,16 +47,12 @@ public class AudioTrackModel extends AudioPlayer {
     }
 
     @Override
-    public void asyncPlay() {
+    public void play(@Nullable PlaybackProgressCallback callback) {
         if (initCompleted && !mIsPlayStarted) {
+            this.callback = callback;
             mIsPlayStarted = true;
             mExecutorService.submit(AudioPlayRunnable);
         }
-    }
-
-    @Override
-    public void play() {
-        asyncPlay();
     }
 
     @Override
@@ -122,14 +121,19 @@ public class AudioTrackModel extends AudioPlayer {
             Log.e(TAG, "Could not write all the samples to the audio device !");
         }
         mAudioTrack.play();
-        Log.d(TAG, "OK, Played " + sizeInBytes + " bytes !");
     }
 
     private Runnable AudioPlayRunnable = () -> {
         byte[] buffer = new byte[SAMPLES_PER_FRAME * 2];
-        while (mIsPlayStarted && readData(buffer, 0, buffer.length) > 0) {
+        int allLen = 0, len;
+        while (mIsPlayStarted && (len = readData(buffer, 0, buffer.length)) > 0) {
             play(buffer, 0, buffer.length);
+            allLen += len;
+            if (null != callback)
+                callback.progress(allLen, audioFile.length());
         }
+        if (callback != null)
+            callback.progress(audioFile.length(), audioFile.length());
         stop();
     };
 

@@ -11,7 +11,7 @@ import java.io.File;
  */
 public class CaptureConfig {
     private String mode = CaptureType.AAC_FORMAT;
-    private boolean log=true;
+    private boolean log= false;
     private String name;
     private File file;
     private int samplingRate = 44100;

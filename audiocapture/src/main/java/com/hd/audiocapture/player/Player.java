@@ -2,6 +2,9 @@ package com.hd.audiocapture.player;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
+import com.hd.audiocapture.callback.PlaybackProgressCallback;
 
 import java.io.File;
 
@@ -20,14 +23,18 @@ public final class Player {
         }
     }
 
+    @Deprecated
     public void asyncPlay() {
-        if (audioPlayer != null)
-            audioPlayer.asyncPlay();
+        play();
     }
 
     public void play() {
+        play(null);
+    }
+
+    public void play(@Nullable PlaybackProgressCallback callback) {
         if (audioPlayer != null)
-            audioPlayer.play();
+            audioPlayer.play(callback);
     }
 
     public void stop() {

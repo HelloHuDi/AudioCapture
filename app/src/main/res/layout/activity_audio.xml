@@ -68,6 +68,14 @@
             android:gravity="center|left"
             android:text="audioVolume"/>
 
+        <TextView
+            android:id="@+id/tvAudioProgress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:gravity="center|left"
+            android:text="audioProgress"/>
+
         <Button
             style="@style/main_button_style"
             android:onClick="start"

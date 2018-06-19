@@ -6,7 +6,9 @@ import android.media.AudioManager;
 import com.hd.audiocapture.AudioCapture;
 import com.hd.audiocapture.Utils;
 import com.hd.audiocapture.callback.CaptureCallback;
+import com.hd.audiocapture.callback.PlaybackProgressCallback;
 import com.hd.audiocapture.capture.Capture;
+import com.hd.audiocapture.player.Player;
 
 import java.io.File;
 
@@ -28,6 +30,8 @@ public class AudioPresenter {
     private Context context;
 
     private CaptureCallback callback;
+
+    private Player player;
 
     AudioPresenter(Context context, CaptureCallback callback) {
         if (Utils.isPermissionGranted(context) && Utils.isExternalStorageReady()) {
@@ -81,8 +85,8 @@ public class AudioPresenter {
             capture.stopCapture();
     }
 
-    public void play(File file) {
+    public void play(File file,PlaybackProgressCallback callback) {
         if (capture != null)
-            capture.play(context, file);
+            capture.play(context, callback);
     }
 }
