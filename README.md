@@ -3,7 +3,7 @@
 </p>
 <h3 align="center">AudioCapture</h3>
 <p align="center">
-<a href="" target="_blank"><img src="https://img.shields.io/badge/release-v1.5-blue.svg"></img></a>
+<a href="" target="_blank"><img src="https://img.shields.io/badge/release-v1.7-blue.svg"></img></a>
 </p>
 
 ## screenshots:
@@ -13,7 +13,7 @@
 ## dependencies :
 
 ```
-implementation 'com.hd:audiocapture:1.5'
+implementation 'com.hd:audiocapture:1.7'
 ```
 
 ## code :
