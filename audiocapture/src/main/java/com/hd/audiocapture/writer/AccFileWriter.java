@@ -7,6 +7,7 @@ import android.os.Build;
 import android.support.annotation.RequiresApi;
 
 import com.hd.audiocapture.CaptureConfig;
+import com.hd.audiocapture.callback.CaptureStreamCallback;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -91,6 +92,9 @@ public class AccFileWriter extends AudioFileWriter {
             }
             mediaCodec.releaseOutputBuffer(outputBufferIndex, false);
             outputBufferIndex = mediaCodec.dequeueOutputBuffer(bufferInfo, 0);
+            if (captureConfig.getCaptureCallback() != null && captureConfig.getCaptureCallback() instanceof CaptureStreamCallback) {
+                ((CaptureStreamCallback) captureConfig.getCaptureCallback()).captureContentByte(buffer);
+            }
         }
         return true;
     }

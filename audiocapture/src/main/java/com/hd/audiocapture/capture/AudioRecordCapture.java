@@ -2,11 +2,14 @@ package com.hd.audiocapture.capture;
 
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.media.audiofx.AcousticEchoCanceler;
+import android.media.audiofx.AutomaticGainControl;
+import android.media.audiofx.NoiseSuppressor;
+import android.os.Build;
 import android.util.Log;
 
 import com.hd.audiocapture.CaptureState;
 import com.hd.audiocapture.CaptureType;
-import com.hd.audiocapture.callback.CaptureStreamCallback;
 import com.hd.audiocapture.writer.AccFileWriter;
 import com.hd.audiocapture.writer.AudioFileWriter;
 import com.hd.audiocapture.writer.WavFileWriter;
@@ -38,15 +41,15 @@ public class AudioRecordCapture extends Capture {
 
     @Override
     void stopRecord() {
-        if (audioFileWriter != null) {
+        if (null != audioFileWriter) {
             boolean success = audioFileWriter.stop();
-            if(captureConfig.allowLog())
-            Log.d(TAG, "writer close complete :" + success);
+            if (captureConfig.allowLog())
+                Log.d(TAG, "writer close complete :" + success);
         }
-        if (audioRecord != null) {
+        if (null != audioRecord) {
             audioRecord.stop();
         }
-        if (mDataOutputStream != null) {
+        if (null != mDataOutputStream) {
             try {
                 mDataOutputStream.close();
             } catch (IOException e) {
@@ -55,52 +58,96 @@ public class AudioRecordCapture extends Capture {
                 mDataOutputStream = null;
             }
         }
-        if(captureConfig.allowLog())
-        Log.d(TAG, "AudioRecordCapture stop record");
+        if (captureConfig.allowLog())
+            Log.d(TAG, "AudioRecordCapture stop record");
     }
 
     @Override
     void release() {
-        if (audioRecord != null) {
+        if (null != audioRecord) {
             audioRecord.release();
             audioRecord = null;
         }
-        if(captureConfig.allowLog())
-        Log.d(TAG, "AudioRecordCapture release");
+        if (null != echoCanceler) {
+            echoCanceler.setEnabled(false);
+            echoCanceler.release();
+            echoCanceler = null;
+        }
+        if (null != noiseSuppressor) {
+            noiseSuppressor.setEnabled(false);
+            noiseSuppressor.release();
+            noiseSuppressor = null;
+        }
+        if (null != gainControl) {
+            gainControl.setEnabled(false);
+            gainControl.release();
+            gainControl = null;
+        }
+        if (captureConfig.allowLog())
+            Log.d(TAG, "AudioRecordCapture release");
     }
 
     private AudioRecord audioRecord;
 
+    private AcousticEchoCanceler echoCanceler;
+
+    private NoiseSuppressor noiseSuppressor;
+
+    private AutomaticGainControl gainControl;
+
     private boolean initAudioRecord() {
-        if (callback != null) callback.captureStatus(CaptureState.START);
+        if (callback != null)
+            callback.captureStatus(CaptureState.START);
         int minBufferSize = AudioRecord.getMinBufferSize(captureConfig.getSamplingRate(), //
                                                          captureConfig.getChannelCount(), captureConfig.getBitrate());
         if (minBufferSize == AudioRecord.ERROR_BAD_VALUE) {
-            if(captureConfig.allowLog())
-            Log.e(TAG, "Invalid parameter !");
+            if (captureConfig.allowLog())
+                Log.e(TAG, "Invalid parameter !");
             return false;
         }
         audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, captureConfig.getSamplingRate(),//
                                       captureConfig.getChannelCount(), captureConfig.getBitrate(), minBufferSize * 4);
         if (audioRecord.getState() == AudioRecord.STATE_UNINITIALIZED) {
-            if(captureConfig.allowLog())
-            Log.e(TAG, "AudioRecord initialize fail !");
+            if (captureConfig.allowLog())
+                Log.e(TAG, "AudioRecord initialize fail !");
             return false;
         }
         try {
+            addAEC();
             audioRecord.startRecording();
             if (audioRecord.getRecordingState() != AudioRecord.RECORDSTATE_RECORDING) {
-                if(captureConfig.allowLog())
-                Log.e(TAG, "unable to recordings,recording equipment may be occupied");
+                if (captureConfig.allowLog())
+                    Log.e(TAG, "unable to recordings,recording equipment may be occupied");
                 stopCapture();
                 return false;
             }
             return true;
         } catch (Exception e) {
-            if(captureConfig.allowLog())
-            Log.e(TAG, "please check audio permission");
+            if (captureConfig.allowLog())
+                Log.e(TAG, "please check audio permission");
             release();
             return false;
+        }
+    }
+
+    private void addAEC() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            int audioSession = audioRecord.getAudioSessionId();
+            if (AcousticEchoCanceler.isAvailable()) {
+                echoCanceler = AcousticEchoCanceler.create(audioSession);
+                echoCanceler.setEnabled(true);
+                if(captureConfig.allowLog()) Log.d(TAG, "start-up acoustic echo canceler");
+            }
+            if (NoiseSuppressor.isAvailable()) {
+                noiseSuppressor = NoiseSuppressor.create(audioSession);
+                noiseSuppressor.setEnabled(true);
+                if(captureConfig.allowLog()) Log.d(TAG, "start-up noise suppressor");
+            }
+            if (AutomaticGainControl.isAvailable()) {
+                gainControl = AutomaticGainControl.create(audioSession);
+                gainControl.setEnabled(true);
+                if(captureConfig.allowLog()) Log.d(TAG, "start-up automatic gain control");
+            }
         }
     }
 
@@ -141,23 +188,20 @@ public class AudioRecordCapture extends Capture {
             byte[] buffer = new byte[SAMPLES_PER_FRAME * 2];
             int ret = audioRecord.read(buffer, 0, buffer.length);
             if (ret == AudioRecord.ERROR_INVALID_OPERATION) {
-                if(captureConfig.allowLog())
-                Log.e(TAG, "Error ERROR_INVALID_OPERATION");
+                if (captureConfig.allowLog())
+                    Log.e(TAG, "Error ERROR_INVALID_OPERATION");
             } else if (ret == AudioRecord.ERROR_BAD_VALUE) {
-                if(captureConfig.allowLog())
-                Log.e(TAG, "Error ERROR_BAD_VALUE");
+                if (captureConfig.allowLog())
+                    Log.e(TAG, "Error ERROR_BAD_VALUE");
             } else {
                 if (ret <= 0) {
-                    if(captureConfig.allowLog())
-                    Log.e(TAG, "read data length error ==>" + ret);
+                    if (captureConfig.allowLog())
+                        Log.e(TAG, "read data length error ==>" + ret);
                 } else {
                     getVolume(buffer, ret);
-                    if (callback != null && callback instanceof CaptureStreamCallback) {
-                        ((CaptureStreamCallback) callback).captureContentByte(buffer);
-                    }
                     boolean su = audioFileWriter.writeData(buffer, 0, buffer.length);
-                    if(captureConfig.allowLog())
-                    Log.d(TAG, "Audio captured: " + buffer.length + "==" + su + "==" + ret);
+                    if (captureConfig.allowLog())
+                        Log.d(TAG, "Audio captured: " + buffer.length + "==" + su + "==" + ret);
                 }
             }
         }
@@ -170,7 +214,7 @@ public class AudioRecordCapture extends Capture {
     }
 
     private void getVolume(short[] buffer, int ret) {
-        calc1(buffer,0,ret);
+        calc1(buffer, 0, ret);
         long v = 0;
         for (short aBuffer : buffer) {
             v += aBuffer * aBuffer;
@@ -181,11 +225,11 @@ public class AudioRecordCapture extends Capture {
             callback.captureVolume(volume);
     }
 
-    private void calc1(short[] lin,int off,int len) {
-        int i,j;
+    private void calc1(short[] lin, int off, int len) {
+        int i, j;
         for (i = 0; i < len; i++) {
-            j = lin[i+off];
-            lin[i+off] = (short)(j>>2);
+            j = lin[i + off];
+            lin[i + off] = (short) (j >> 2);
         }
     }
 
