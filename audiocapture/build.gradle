@@ -6,7 +6,7 @@ def siteUrl = 'https://github.com/HelloHuDi/AudioCapture'
 def gitUrl = 'git@github.com:HelloHuDi/AudioCapture.git'
 Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
-version = "1.7"
+version = "1.8"
 group = "com.hd"
 
 android {
@@ -15,11 +15,9 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 27
-        versionCode 17
-        versionName "1.7"
-
+        versionCode 18
+        versionName "1.8"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
     }
 
     buildTypes {

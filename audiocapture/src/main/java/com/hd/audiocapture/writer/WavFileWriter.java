@@ -4,6 +4,7 @@ import android.media.AudioFormat;
 
 import com.hd.audiocapture.CaptureConfig;
 import com.hd.audiocapture.Utils;
+import com.hd.audiocapture.callback.CaptureStreamCallback;
 
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
@@ -61,11 +62,14 @@ public class WavFileWriter extends AudioFileWriter {
 
     private DataOutputStream mDataOutputStream;
 
+    private CaptureConfig captureConfig;
+
     @Override
-    public void init(DataOutputStream mDataOutputStream,CaptureConfig captureConfig) {
+    public void init(DataOutputStream mDataOutputStream, CaptureConfig captureConfig) {
         header = new WavFileHeader(captureConfig.getSamplingRate(), AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
         mDataSize = 0;
         this.mDataOutputStream = mDataOutputStream;
+        this.captureConfig = captureConfig;
         this.mFilepath = captureConfig.getFile().getAbsolutePath();
     }
 
@@ -101,8 +105,16 @@ public class WavFileWriter extends AudioFileWriter {
             return false;
         }
         try {
-            mDataOutputStream.write(buffer, offset, count);
+            byte[] filterData = null;
+            if (captureConfig.getCaptureCallback() != null && captureConfig.getCaptureCallback() instanceof CaptureStreamCallback) {
+                filterData = ((CaptureStreamCallback) captureConfig.getCaptureCallback()).filterContentByte(buffer);
+            }
+            buffer = filterData == null || filterData.length <= 0 ? buffer : filterData;
+            mDataOutputStream.write(buffer, offset, buffer.length);
             mDataSize += count;
+            if (captureConfig.getCaptureCallback() != null && captureConfig.getCaptureCallback() instanceof CaptureStreamCallback) {
+                ((CaptureStreamCallback) captureConfig.getCaptureCallback()).captureContentByte(buffer);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return false;

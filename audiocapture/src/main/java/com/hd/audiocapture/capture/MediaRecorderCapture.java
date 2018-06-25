@@ -32,10 +32,10 @@ public class MediaRecorderCapture extends Capture {
             record.set(true);
             if (callback != null)
                 callback.captureStatus(CaptureState.START);
-            mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            mMediaRecorder.setAudioSource(captureConfig.getAudioSource());
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                 mMediaRecorder.setOutputFormat(CaptureType.AAC_FORMAT.equals(mode) ?//
-                                                       MediaRecorder.OutputFormat.AAC_ADTS : MediaRecorder.OutputFormat.MPEG_4);
+                               MediaRecorder.OutputFormat.AAC_ADTS : MediaRecorder.OutputFormat.MPEG_4);
             } else {
                 mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
             }

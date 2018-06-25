@@ -1,7 +1,6 @@
 package com.hd.audiocapture.capture;
 
 import android.media.AudioRecord;
-import android.media.MediaRecorder;
 import android.media.audiofx.AcousticEchoCanceler;
 import android.media.audiofx.AutomaticGainControl;
 import android.media.audiofx.NoiseSuppressor;
@@ -105,7 +104,7 @@ public class AudioRecordCapture extends Capture {
                 Log.e(TAG, "Invalid parameter !");
             return false;
         }
-        audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, captureConfig.getSamplingRate(),//
+        audioRecord = new AudioRecord(captureConfig.getAudioSource(), captureConfig.getSamplingRate(),//
                                       captureConfig.getChannelCount(), captureConfig.getBitrate(), minBufferSize * 4);
         if (audioRecord.getState() == AudioRecord.STATE_UNINITIALIZED) {
             if (captureConfig.allowLog())

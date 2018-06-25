@@ -105,6 +105,11 @@ public class AudioActivity extends AppCompatActivity implements RadioGroup.OnChe
     }
 
     @Override
+    public byte[] filterContentByte(@NonNull byte[] content) {
+        return new byte[0];
+    }
+
+    @Override
     public void captureContentByte(@NonNull byte[] content) {
         Log.d("tag", "====" + Arrays.toString(content));
     }

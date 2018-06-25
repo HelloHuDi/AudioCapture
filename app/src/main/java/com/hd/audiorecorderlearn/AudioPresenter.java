@@ -4,11 +4,12 @@ import android.content.Context;
 import android.media.AudioManager;
 
 import com.hd.audiocapture.AudioCapture;
+import com.hd.audiocapture.CaptureConfig;
+import com.hd.audiocapture.CaptureManager;
 import com.hd.audiocapture.Utils;
 import com.hd.audiocapture.callback.CaptureCallback;
 import com.hd.audiocapture.callback.PlaybackProgressCallback;
 import com.hd.audiocapture.capture.Capture;
-import com.hd.audiocapture.player.Player;
 
 import java.io.File;
 
@@ -31,62 +32,64 @@ public class AudioPresenter {
 
     private CaptureCallback callback;
 
-    private Player player;
+    private CaptureConfig captureConfig;
 
     AudioPresenter(Context context, CaptureCallback callback) {
         if (Utils.isPermissionGranted(context) && Utils.isExternalStorageReady()) {
             this.context = context;
             this.callback = callback;
             AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-            audioManager.setSpeakerphoneOn(false);
-            audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, 0, AudioManager.STREAM_VOICE_CALL);
-            audioManager.setMode(AudioManager.MODE_IN_CALL);
+            if(audioManager!=null) {
+                audioManager.setSpeakerphoneOn(false);
+                audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, 0, AudioManager.STREAM_VOICE_CALL);
+                audioManager.setMode(AudioManager.MODE_IN_CALL);
+            }
+            initConfig();
         } else {
             throw new RuntimeException("permission not grant");
         }
     }
 
+    private void initConfig() {
+        captureConfig = new CaptureConfig.Builder().setCaptureCallback(callback).build();
+    }
+
     public void initStyle(int style) {
+        String fileName = String.valueOf(System.currentTimeMillis());
+        String suffix = "";
+        CaptureManager manager = null;
         switch (style) {
             case MEDIARECORDER_MP4_STYLE:
-                capture = AudioCapture.withMediaRecorderToMP4()//
-                                      .setCaptureName(System.currentTimeMillis() + "_medMp4")//
-                                      .setCaptureCallback(callback)//
-                                      .getCapture();
+                suffix = "_medMp4";
+                manager = AudioCapture.withMediaRecorderToMP4();
                 break;
             case MEDIARECORDER_AAC_STYLE:
-                capture = AudioCapture.withMediaRecorderToAAC()//
-                                      .setCaptureName(System.currentTimeMillis() + "_medAAC")//
-                                      .setCaptureCallback(callback)//
-                                      .getCapture();//
+                suffix = "_medAAC";
+                manager = AudioCapture.withMediaRecorderToAAC();
                 break;
             case AUDIORECORD_AAC_STYLE:
-                capture = AudioCapture.withAudioRecordToAAC()//
-                                      .setCaptureName(System.currentTimeMillis() + "_arAAC")//
-                                      .setCaptureCallback(callback)//
-                                      .getCapture();//
+                suffix = "_arAAC";
+                manager = AudioCapture.withAudioRecordToAAC();
                 break;
             case AUDIORECORD_WAV_STYLE:
-                capture = AudioCapture.withAudioRecordToWAV()//
-                                      .setCaptureName(System.currentTimeMillis() + "_arWAV")//
-                                      .setCaptureCallback(callback)//
-                                      .getCapture();//
+                suffix = "_arWAV";
+                manager = AudioCapture.withAudioRecordToWAV();
                 break;
         }
+        fileName += suffix;
+        captureConfig.setName(fileName);
+        if (manager != null) capture = manager.setCaptureConfig(captureConfig).getCapture();
     }
 
     public void start() {
-        if (capture != null)
-            capture.startCapture(/*5000*/);
+        if (capture != null) capture.startCapture(/*5000*/);
     }
 
     public void stop() {
-        if (capture != null)
-            capture.stopCapture();
+        if (capture != null) capture.stopCapture();
     }
 
-    public void play(File file,PlaybackProgressCallback callback) {
-        if (capture != null)
-            capture.play(context, callback);
+    public void play(File file, PlaybackProgressCallback callback) {
+        if (capture != null) capture.play(context, callback);
     }
 }

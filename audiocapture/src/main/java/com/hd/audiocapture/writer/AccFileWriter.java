@@ -86,6 +86,11 @@ public class AccFileWriter extends AudioFileWriter {
             addADTStoPacket(outData, outPacketSize, captureConfig.getSamplingRate(), captureConfig.getChannelCount());
             outputBuffer.get(outData, 7, outBitsSize);
             try {
+                byte[] filterData = null;
+                if (captureConfig.getCaptureCallback() != null && captureConfig.getCaptureCallback() instanceof CaptureStreamCallback) {
+                    filterData = ((CaptureStreamCallback) captureConfig.getCaptureCallback()).filterContentByte(outData);
+                }
+                outData = filterData == null || filterData.length <= 0 ? outData : filterData;
                 mDataOutputStream.write(outData);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -93,7 +98,7 @@ public class AccFileWriter extends AudioFileWriter {
             mediaCodec.releaseOutputBuffer(outputBufferIndex, false);
             outputBufferIndex = mediaCodec.dequeueOutputBuffer(bufferInfo, 0);
             if (captureConfig.getCaptureCallback() != null && captureConfig.getCaptureCallback() instanceof CaptureStreamCallback) {
-                ((CaptureStreamCallback) captureConfig.getCaptureCallback()).captureContentByte(buffer);
+                ((CaptureStreamCallback) captureConfig.getCaptureCallback()).captureContentByte(outData);
             }
         }
         return true;
@@ -105,7 +110,7 @@ public class AccFileWriter extends AudioFileWriter {
         if (mediaCodec != null) {
             mediaCodec.stop();
             mediaCodec.release();
-            mediaCodec=null;
+            mediaCodec = null;
         }
         return true;
     }

@@ -1,6 +1,7 @@
 package com.hd.audiocapture;
 
 import android.media.AudioFormat;
+import android.media.MediaRecorder;
 
 import com.hd.audiocapture.callback.CaptureCallback;
 
@@ -14,6 +15,7 @@ public class CaptureConfig {
     private boolean log= false;
     private String name;
     private File file;
+    private int audioSource = MediaRecorder.AudioSource.MIC;
     private int samplingRate = 44100;
     private int channelCount = 1;
     private int bitrate = AudioFormat.ENCODING_PCM_16BIT;
@@ -56,6 +58,14 @@ public class CaptureConfig {
         this.file = file;
     }
 
+    public int getAudioSource() {
+        return audioSource;
+    }
+
+    public void setAudioSource(int audioSource) {
+        this.audioSource = audioSource;
+    }
+
     public int getSamplingRate() {
         return samplingRate;
     }
@@ -86,6 +96,64 @@ public class CaptureConfig {
 
     public void setCaptureCallback(CaptureCallback captureCallback) {
         this.captureCallback = captureCallback;
+    }
+
+    public static class Builder{
+
+        private CaptureConfig config;
+
+        public Builder() {
+            config=new CaptureConfig();
+        }
+
+        public Builder setLog(boolean log){
+            config.setLog(log);
+            return this;
+        }
+
+        public Builder setMode(String mode) {
+            config.setMode(mode);
+            return this;
+        }
+
+        public Builder setName(String name){
+            config.setName(name);
+            return this;
+        }
+
+        public Builder setFile(File file){
+            config.setFile(file);
+            return this;
+        }
+
+        public Builder setAudioSource(int audioSource){
+            config.setAudioSource(audioSource);
+            return this;
+        }
+
+        public Builder setSamplingRate(int samplingRate){
+            config.setSamplingRate(samplingRate);
+            return this;
+        }
+
+        public Builder setChannelCount(int channelCount){
+            config.setChannelCount(channelCount);
+            return this;
+        }
+
+        public Builder setBitrate(int bitrate){
+            config.setBitrate(bitrate);
+            return this;
+        }
+
+        public Builder setCaptureCallback(CaptureCallback captureCallback){
+            config.setCaptureCallback(captureCallback);
+            return this;
+        }
+
+        public CaptureConfig build(){
+            return config;
+        }
     }
 
 }
