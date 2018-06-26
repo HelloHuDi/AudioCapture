@@ -98,14 +98,14 @@ public class AudioRecordCapture extends Capture {
         if (callback != null)
             callback.captureStatus(CaptureState.START);
         int minBufferSize = AudioRecord.getMinBufferSize(captureConfig.getSamplingRate(), //
-                                                         captureConfig.getChannelCount(), captureConfig.getBitrate());
+                                                         captureConfig.getChannelCount(), captureConfig.getAudioFormat());
         if (minBufferSize == AudioRecord.ERROR_BAD_VALUE) {
             if (captureConfig.allowLog())
                 Log.e(TAG, "Invalid parameter !");
             return false;
         }
         audioRecord = new AudioRecord(captureConfig.getAudioSource(), captureConfig.getSamplingRate(),//
-                                      captureConfig.getChannelCount(), captureConfig.getBitrate(), minBufferSize * 4);
+                                      captureConfig.getChannelCount(), captureConfig.getAudioFormat(), minBufferSize * 4);
         if (audioRecord.getState() == AudioRecord.STATE_UNINITIALIZED) {
             if (captureConfig.allowLog())
                 Log.e(TAG, "AudioRecord initialize fail !");

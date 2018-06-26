@@ -18,7 +18,8 @@ public class CaptureConfig {
     private int audioSource = MediaRecorder.AudioSource.MIC;
     private int samplingRate = 44100;
     private int channelCount = 1;
-    private int bitrate = AudioFormat.ENCODING_PCM_16BIT;
+    private int bitrate = 64*1024;
+    private int audioFormat=AudioFormat.ENCODING_PCM_16BIT;
     private CaptureCallback captureCallback;
 
     @Override
@@ -90,6 +91,14 @@ public class CaptureConfig {
         this.bitrate = bitrate;
     }
 
+    public int getAudioFormat() {
+        return audioFormat;
+    }
+
+    public void setAudioFormat(int audioFormat) {
+        this.audioFormat = audioFormat;
+    }
+
     public CaptureCallback getCaptureCallback() {
         return captureCallback;
     }
@@ -143,6 +152,11 @@ public class CaptureConfig {
 
         public Builder setBitrate(int bitrate){
             config.setBitrate(bitrate);
+            return this;
+        }
+
+        public Builder setAudioFormat(int audioFormat){
+            config.setAudioFormat(audioFormat);
             return this;
         }
 
