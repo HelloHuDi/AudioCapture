@@ -46,7 +46,7 @@ public class MediaRecorderCapture extends Capture {
             mMediaRecorder.prepare();
             mMediaRecorder.start();
             if (callback != null)
-                callback.captureStatus(CaptureState.CAPTURING);
+                callback.captureStatus(CaptureState.RESUME);
             initVolumeThread();
         } catch (Exception e) {
             e.printStackTrace();

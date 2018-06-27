@@ -1,6 +1,7 @@
 package com.hd.audiocapture;
 
 import android.media.AudioFormat;
+import android.media.MediaCodecInfo;
 import android.media.MediaRecorder;
 
 import com.hd.audiocapture.callback.CaptureCallback;
@@ -20,6 +21,7 @@ public class CaptureConfig {
     private int channelCount = 1;
     private int bitrate = 64*1024;
     private int audioFormat=AudioFormat.ENCODING_PCM_16BIT;
+    private int profile= MediaCodecInfo.CodecProfileLevel.AACObjectMain;
     private CaptureCallback captureCallback;
 
     @Override
@@ -99,6 +101,14 @@ public class CaptureConfig {
         this.audioFormat = audioFormat;
     }
 
+    public int getProfile() {
+        return profile;
+    }
+
+    public void setProfile(int profile) {
+        this.profile = profile;
+    }
+
     public CaptureCallback getCaptureCallback() {
         return captureCallback;
     }
@@ -157,6 +167,11 @@ public class CaptureConfig {
 
         public Builder setAudioFormat(int audioFormat){
             config.setAudioFormat(audioFormat);
+            return this;
+        }
+
+        public Builder setProfile(int profile){
+            config.setProfile(profile);
             return this;
         }
 

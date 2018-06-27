@@ -135,17 +135,20 @@ public class AudioRecordCapture extends Capture {
             if (AcousticEchoCanceler.isAvailable()) {
                 echoCanceler = AcousticEchoCanceler.create(audioSession);
                 echoCanceler.setEnabled(true);
-                if(captureConfig.allowLog()) Log.d(TAG, "start-up acoustic echo canceler");
+                if (captureConfig.allowLog())
+                    Log.d(TAG, "start-up acoustic echo canceler");
             }
             if (NoiseSuppressor.isAvailable()) {
                 noiseSuppressor = NoiseSuppressor.create(audioSession);
                 noiseSuppressor.setEnabled(true);
-                if(captureConfig.allowLog()) Log.d(TAG, "start-up noise suppressor");
+                if (captureConfig.allowLog())
+                    Log.d(TAG, "start-up noise suppressor");
             }
             if (AutomaticGainControl.isAvailable()) {
                 gainControl = AutomaticGainControl.create(audioSession);
                 gainControl.setEnabled(true);
-                if(captureConfig.allowLog()) Log.d(TAG, "start-up automatic gain control");
+                if (captureConfig.allowLog())
+                    Log.d(TAG, "start-up automatic gain control");
             }
         }
     }
@@ -182,7 +185,7 @@ public class AudioRecordCapture extends Capture {
 
     private void startReadData() {
         if (callback != null)
-            callback.captureStatus(CaptureState.CAPTURING);
+            callback.captureStatus(CaptureState.RESUME);
         while (record.get()) {
             byte[] buffer = new byte[SAMPLES_PER_FRAME * 2];
             int ret = audioRecord.read(buffer, 0, buffer.length);
@@ -198,6 +201,11 @@ public class AudioRecordCapture extends Capture {
                         Log.e(TAG, "read data length error ==>" + ret);
                 } else {
                     getVolume(buffer, ret);
+                    if (ret != buffer.length) {
+                        byte[] data = new byte[ret];
+                        System.arraycopy(buffer, 0, data, 0, ret);
+                        buffer = data;
+                    }
                     boolean su = audioFileWriter.writeData(buffer, 0, buffer.length);
                     if (captureConfig.allowLog())
                         Log.d(TAG, "Audio captured: " + buffer.length + "==" + su + "==" + ret);

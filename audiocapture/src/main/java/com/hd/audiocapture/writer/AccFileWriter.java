@@ -1,10 +1,9 @@
 package com.hd.audiocapture.writer;
 
+import android.annotation.TargetApi;
 import android.media.MediaCodec;
-import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
 
 import com.hd.audiocapture.CaptureConfig;
 import com.hd.audiocapture.callback.CaptureStreamCallback;
@@ -28,7 +27,7 @@ public class AccFileWriter extends AudioFileWriter {
         this.captureConfig = captureConfig;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     @Override
     public boolean start() {
         if (mediaCodec != null) {
@@ -46,7 +45,7 @@ public class AccFileWriter extends AudioFileWriter {
         format.setInteger(MediaFormat.KEY_CHANNEL_COUNT, captureConfig.getChannelCount());
         format.setInteger(MediaFormat.KEY_SAMPLE_RATE, captureConfig.getSamplingRate());
         format.setInteger(MediaFormat.KEY_BIT_RATE, captureConfig.getBitrate());
-        format.setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectLC);
+        format.setInteger(MediaFormat.KEY_AAC_PROFILE, captureConfig.getProfile());
         bufferInfo = new MediaCodec.BufferInfo();
         mediaCodec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         mediaCodec.start();
@@ -61,7 +60,7 @@ public class AccFileWriter extends AudioFileWriter {
     private int outputBufferIndex;
     private MediaCodec.BufferInfo bufferInfo = null;
 
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     @Override
     public boolean writeData(byte[] buffer, int offset, int count) {
         if (mediaCodec == null) {
@@ -104,7 +103,7 @@ public class AccFileWriter extends AudioFileWriter {
         return true;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     @Override
     public boolean stop() {
         if (mediaCodec != null) {

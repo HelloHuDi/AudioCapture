@@ -9,7 +9,8 @@ import android.support.annotation.Nullable;
 public interface CaptureStreamCallback extends CaptureCallback{
 
     /**
-     * filter audio content bytes,e.g. add AEC/AECM
+     * filter audio content bytes,e.g. add AEC/AECM .
+     * the recorded audio may be noisy, and the data source can be processed by this method
      */
     @Nullable byte[] filterContentByte(@NonNull byte[] content);
     /**
