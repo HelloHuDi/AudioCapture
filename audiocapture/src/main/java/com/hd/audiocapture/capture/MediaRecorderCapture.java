@@ -2,6 +2,7 @@ package com.hd.audiocapture.capture;
 
 import android.media.MediaRecorder;
 import android.os.Build;
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.hd.audiocapture.CaptureState;
@@ -24,18 +25,17 @@ public class MediaRecorderCapture extends Capture {
             mMediaRecorder = new MediaRecorder();
             File mRecorderFile = createAudioFile();
             if (mRecorderFile == null) {
-                if(captureConfig.allowLog())
-                Log.e(TAG, "create file error");
+                if (captureConfig.allowLog())
+                    Log.e(TAG, "create file error");
                 notAllowEnterNextStep();
                 return;
             }
             record.set(true);
-            if (callback != null)
-                callback.captureStatus(CaptureState.START);
+            reportState(CaptureState.START);
             mMediaRecorder.setAudioSource(captureConfig.getAudioSource());
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                mMediaRecorder.setOutputFormat(CaptureType.AAC_FORMAT.equals(mode) ?//
-                               MediaRecorder.OutputFormat.AAC_ADTS : MediaRecorder.OutputFormat.MPEG_4);
+                mMediaRecorder.setOutputFormat(CaptureType.AAC_FORMAT.equals(captureConfig.getMode()) ?//
+                                                       MediaRecorder.OutputFormat.AAC_ADTS : MediaRecorder.OutputFormat.MPEG_4);
             } else {
                 mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
             }
@@ -45,15 +45,66 @@ public class MediaRecorderCapture extends Capture {
             mMediaRecorder.setOutputFile(mRecorderFile.getAbsolutePath());
             mMediaRecorder.prepare();
             mMediaRecorder.start();
-            if (callback != null)
-                callback.captureStatus(CaptureState.RESUME);
+            reportState(CaptureState.RESUME);
             initVolumeThread();
         } catch (Exception e) {
             e.printStackTrace();
-            if(captureConfig.allowLog())
-            Log.e(TAG, "create media recorder error :" + e);
+            if (captureConfig.allowLog())
+                Log.e(TAG, "create media recorder error :" + e);
             notAllowEnterNextStep();
         }
+    }
+
+    /**
+     * recommend {@link AudioRecordCapture}
+     * <p>
+     * This function is not supported before api 24 ,if you want to implement such a function,
+     * you can try to record multiple files and merge them at last.
+     */
+    @Override
+    public void pauseCapture() {
+        mExecutorService.submit(() -> {
+            if (mMediaRecorder != null) {
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        reportState(CaptureState.PAUSE);
+                        mMediaRecorder.pause();
+                        SystemClock.sleep(50);
+                        if (callback != null) callback.captureVolume(0d);
+                    } else {
+                        Log.e(TAG, "This function is not supported before api 24 ");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    notAllowEnterNextStep();
+                }
+            }
+        });
+    }
+
+    /**
+     * recommend {@link AudioRecordCapture}
+     * <p>
+     * This function is not supported before api 24 ,if you want to implement such a function,
+     * you can try to record multiple files and merge them at last.
+     */
+    @Override
+    public void resumeCapture() {
+        mExecutorService.submit(() -> {
+            if (mMediaRecorder != null) {
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        reportState(CaptureState.RESUME);
+                        mMediaRecorder.resume();
+                    } else {
+                        Log.e(TAG, "This function is not supported before api 24 ");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    notAllowEnterNextStep();
+                }
+            }
+        });
     }
 
     @Override
@@ -65,8 +116,8 @@ public class MediaRecorderCapture extends Capture {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        if(captureConfig.allowLog())
-        Log.d(TAG, "MediaRecorderCapture stop record");
+        if (captureConfig.allowLog())
+            Log.d(TAG, "MediaRecorderCapture stop record");
     }
 
     @Override
@@ -75,24 +126,26 @@ public class MediaRecorderCapture extends Capture {
             mMediaRecorder.release();
             mMediaRecorder = null;
         }
-        if(captureConfig.allowLog())
-        Log.d(TAG, "MediaRecorderCapture release");
+        if (captureConfig.allowLog())
+            Log.d(TAG, "MediaRecorderCapture release");
     }
 
     private void initVolumeThread() {
-        new Thread(() -> {
+        mExecutorService.submit(() -> {
             while (record.get() && mMediaRecorder != null) {
                 try {
-                    double ratio = (double) mMediaRecorder.getMaxAmplitude() / 1;
-                    if (ratio > 1) {
-                        double db = 20 * Math.log10(ratio);
-                        if (callback != null)
-                            callback.captureVolume(db);
+                    if (CaptureState.RESUME == state) {
+                        double ratio = (double) mMediaRecorder.getMaxAmplitude() / 1;
+                        if (ratio > 1) {
+                            double db = 20 * Math.log10(ratio);
+                            if (callback != null)
+                                callback.captureVolume(db);
+                        }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-        }).start();
+        });
     }
 }

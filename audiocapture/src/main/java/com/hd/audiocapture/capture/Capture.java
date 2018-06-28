@@ -2,6 +2,7 @@ package com.hd.audiocapture.capture;
 
 import android.content.Context;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
@@ -34,15 +35,17 @@ public abstract class Capture {
 
     private final String TAG = Capture.class.getSimpleName();
 
-    private ExecutorService mExecutorService = Executors.newFixedThreadPool(2);
-
     private File file;
+
+    private Timer timer;
+
+    ExecutorService mExecutorService = Executors.newFixedThreadPool(4);
+
+    CaptureState state = CaptureState.PREPARE;
 
     AtomicBoolean record = new AtomicBoolean(false);
 
     CaptureConfig captureConfig;
-
-    String mode = CaptureType.AAC_FORMAT;
 
     CaptureCallback callback;
 
@@ -83,14 +86,20 @@ public abstract class Capture {
     }
 
     void notAllowEnterNextStep() {
-        if (callback != null)
-            callback.captureStatus(CaptureState.FAILED);
+        reportState(CaptureState.FAILED);
         cancelCapture();
+    }
+
+    void reportState(CaptureState captureState) {
+        if (state != CaptureState.FAILED) {
+            state = captureState;
+            if (callback != null)
+                callback.captureStatus(state);
+        }
     }
 
     public void setCaptureConfig(CaptureConfig captureConfig) {
         this.captureConfig = captureConfig;
-        mode = captureConfig.getMode();
         callback = captureConfig.getCaptureCallback();
     }
 
@@ -99,23 +108,31 @@ public abstract class Capture {
     }
 
     public void startCapture(long duration) {
-        if (callback != null)
-            callback.captureStatus(CaptureState.PREPARE);
+        reportState(CaptureState.PREPARE);
         cancelCapture();
         mExecutorService.submit(this::startRecord);
-        if (duration > 0)
-            new Timer().schedule(new TimerTask() {
+        if (duration > 0) {
+            timer = new Timer();
+            timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
                     stopCapture();
                 }
             }, duration);
+        }
+    }
+
+    public void pauseCapture() {
+        reportState(CaptureState.PAUSE);
+    }
+
+    public void resumeCapture() {
+        reportState(CaptureState.RESUME);
     }
 
     public void stopCapture() {
+        reportState(CaptureState.COMPLETED);
         cancelCapture();
-        if (callback != null)
-            callback.captureStatus(CaptureState.COMPLETED);
     }
 
     public void play(Context context) {
@@ -133,13 +150,16 @@ public abstract class Capture {
                 stopRecord();
                 release();
             });
+            SystemClock.sleep(50);
         }
+        if (timer != null)
+            timer.cancel();
         captureConfig.setFile(null);
     }
 
     private String getFilePostfixName() {
         String postfix;
-        switch (mode) {
+        switch (captureConfig.getMode()) {
             case CaptureType.AAC_FORMAT:
                 postfix = ".aac";
                 break;
@@ -150,7 +170,7 @@ public abstract class Capture {
                 postfix = ".mp4";
                 break;
             default:
-                postfix = "." + mode;
+                postfix = "." + captureConfig.getMode();
                 break;
         }
         return postfix;

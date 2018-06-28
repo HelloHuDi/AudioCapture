@@ -34,12 +34,14 @@ public class AudioPresenter {
 
     private CaptureConfig captureConfig;
 
+    private CaptureManager manager = null;
+
     AudioPresenter(Context context, CaptureCallback callback) {
         if (Utils.isPermissionGranted(context) && Utils.isExternalStorageReady()) {
             this.context = context;
             this.callback = callback;
             AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-            if(audioManager!=null) {
+            if (audioManager != null) {
                 audioManager.setSpeakerphoneOn(false);
                 audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, 0, AudioManager.STREAM_VOICE_CALL);
                 audioManager.setMode(AudioManager.MODE_IN_CALL);
@@ -55,9 +57,6 @@ public class AudioPresenter {
     }
 
     public void initStyle(int style) {
-        String fileName = String.valueOf(System.currentTimeMillis());
-        String suffix = "";
-        CaptureManager manager = null;
         switch (style) {
             case MEDIARECORDER_MP4_STYLE:
                 suffix = "_medMp4";
@@ -76,20 +75,40 @@ public class AudioPresenter {
                 manager = AudioCapture.withAudioRecordToWAV();
                 break;
         }
+    }
+
+    private String suffix = "";
+
+    private void getCapture() {
+        String fileName = String.valueOf(System.currentTimeMillis());
         fileName += suffix;
         captureConfig.setName(fileName);
-        if (manager != null) capture = manager.setCaptureConfig(captureConfig).getCapture();
+        capture = manager.setCaptureConfig(captureConfig).getCapture();
     }
 
     public void start() {
-        if (capture != null) capture.startCapture(/*5000*/);
+        getCapture();
+        if (capture != null)
+            capture.startCapture();
+    }
+
+    public void pause() {
+        if (capture != null)
+            capture.pauseCapture();
+    }
+
+    public void resume() {
+        if (capture != null)
+            capture.resumeCapture();
     }
 
     public void stop() {
-        if (capture != null) capture.stopCapture();
+        if (capture != null)
+            capture.stopCapture();
     }
 
     public void play(File file, PlaybackProgressCallback callback) {
-        if (capture != null) capture.play(context, callback);
+        if (capture != null)
+            capture.play(context, callback);
     }
 }

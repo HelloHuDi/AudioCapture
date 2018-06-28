@@ -1,6 +1,7 @@
 package com.hd.audiocapture.writer;
 
 import com.hd.audiocapture.CaptureConfig;
+import com.hd.audiocapture.CaptureState;
 
 import java.io.DataOutputStream;
 
@@ -9,11 +10,11 @@ import java.io.DataOutputStream;
  */
 public abstract class AudioFileWriter {
 
-    public abstract void init(DataOutputStream mDataOutputStream,CaptureConfig captureConfig);
+    public abstract void init(DataOutputStream mDataOutputStream, CaptureConfig captureConfig);
 
     public abstract boolean start();
 
-    public abstract boolean writeData(byte[] buffer, int offset, int count);
+    public abstract boolean writeData(CaptureState state, byte[] buffer, int offset, int count);
 
     public abstract boolean stop();
 }

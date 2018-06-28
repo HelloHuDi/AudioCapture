@@ -21,6 +21,8 @@ public final class AudioCapture {
 
     /**
      * record aac audio file
+     * <p>
+     * small files, easy to transfer
      */
     public static CaptureManager withAudioRecordToAAC() {
         return with(CaptureType.AUDIO_RECORD_TYPE, CaptureType.AAC_FORMAT);
@@ -28,6 +30,8 @@ public final class AudioCapture {
 
     /**
      * record wav audio file
+     * <p>
+     * good sound quality
      */
     public static CaptureManager withAudioRecordToWAV() {
         return with(CaptureType.AUDIO_RECORD_TYPE, CaptureType.WAV_FORMAT);
@@ -35,6 +39,10 @@ public final class AudioCapture {
 
     /**
      * record aac audio file
+     * <p>
+     * do not provide a pause, restart the function before api 24 ，this method provides only simple functions
+     * <p>
+     * recommend {@link #withAudioRecordToWAV} or {@link #withAudioRecordToAAC}
      */
     public static CaptureManager withMediaRecorderToAAC() {
         return with(CaptureType.MEDIA_RECORDER_TYPE, CaptureType.AAC_FORMAT);
@@ -42,13 +50,17 @@ public final class AudioCapture {
 
     /**
      * record mp4 audio file
+     * <p>
+     * do not provide a pause, restart the function before api 24 , this method provides only simple functions
+     * <p>
+     * recommend {@link #withAudioRecordToWAV} or {@link #withAudioRecordToAAC}
      */
     public static CaptureManager withMediaRecorderToMP4() {
         return with(CaptureType.MEDIA_RECORDER_TYPE, CaptureType.MP4_FORMAT);
     }
 
     /**
-     * record wav audio file
+     * record default audio file {@link #withAudioRecordToWAV()}
      */
     public static CaptureManager withDefault() {
         return withAudioRecordToWAV();

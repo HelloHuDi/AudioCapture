@@ -3,6 +3,7 @@ package com.hd.audiocapture.writer;
 import android.media.AudioFormat;
 
 import com.hd.audiocapture.CaptureConfig;
+import com.hd.audiocapture.CaptureState;
 import com.hd.audiocapture.Utils;
 import com.hd.audiocapture.callback.CaptureStreamCallback;
 
@@ -100,24 +101,26 @@ public class WavFileWriter extends AudioFileWriter {
     }
 
     @Override
-    public boolean writeData(byte[] buffer, int offset, int count) {
+    public boolean writeData(CaptureState state, byte[] buffer, int offset, int count) {
         if (mDataOutputStream == null) {
             return false;
         }
-        try {
-            byte[] filterData = null;
-            if (captureConfig.getCaptureCallback() != null && captureConfig.getCaptureCallback() instanceof CaptureStreamCallback) {
-                filterData = ((CaptureStreamCallback) captureConfig.getCaptureCallback()).filterContentByte(buffer);
+        if (CaptureState.RESUME == state) {
+            try {
+                byte[] filterData = null;
+                if (captureConfig.getCaptureCallback() != null && captureConfig.getCaptureCallback() instanceof CaptureStreamCallback) {
+                    filterData = ((CaptureStreamCallback) captureConfig.getCaptureCallback()).filterContentByte(buffer);
+                }
+                buffer = filterData == null || filterData.length <= 0 ? buffer : filterData;
+                mDataOutputStream.write(buffer, offset, buffer.length);
+                mDataSize += count;
+                if (captureConfig.getCaptureCallback() != null && captureConfig.getCaptureCallback() instanceof CaptureStreamCallback) {
+                    ((CaptureStreamCallback) captureConfig.getCaptureCallback()).captureContentByte(buffer);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
             }
-            buffer = filterData == null || filterData.length <= 0 ? buffer : filterData;
-            mDataOutputStream.write(buffer, offset, buffer.length);
-            mDataSize += count;
-            if (captureConfig.getCaptureCallback() != null && captureConfig.getCaptureCallback() instanceof CaptureStreamCallback) {
-                ((CaptureStreamCallback) captureConfig.getCaptureCallback()).captureContentByte(buffer);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
         }
         return true;
     }

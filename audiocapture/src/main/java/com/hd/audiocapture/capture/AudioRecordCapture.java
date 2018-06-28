@@ -95,8 +95,7 @@ public class AudioRecordCapture extends Capture {
     private AutomaticGainControl gainControl;
 
     private boolean initAudioRecord() {
-        if (callback != null)
-            callback.captureStatus(CaptureState.START);
+        reportState(CaptureState.START);
         int minBufferSize = AudioRecord.getMinBufferSize(captureConfig.getSamplingRate(), //
                                                          captureConfig.getChannelCount(), captureConfig.getAudioFormat());
         if (minBufferSize == AudioRecord.ERROR_BAD_VALUE) {
@@ -171,7 +170,7 @@ public class AudioRecordCapture extends Capture {
     private AudioFileWriter audioFileWriter;
 
     private boolean writeHeader() {
-        if (CaptureType.AAC_FORMAT.equals(mode)) {
+        if (CaptureType.AAC_FORMAT.equals(captureConfig.getMode())) {
             audioFileWriter = new AccFileWriter();
         } else {
             audioFileWriter = new WavFileWriter();
@@ -184,8 +183,7 @@ public class AudioRecordCapture extends Capture {
     private static final int SAMPLES_PER_FRAME = 1024;
 
     private void startReadData() {
-        if (callback != null)
-            callback.captureStatus(CaptureState.RESUME);
+        reportState(CaptureState.RESUME);
         while (record.get()) {
             byte[] buffer = new byte[SAMPLES_PER_FRAME * 2];
             int ret = audioRecord.read(buffer, 0, buffer.length);
@@ -201,13 +199,13 @@ public class AudioRecordCapture extends Capture {
                         Log.e(TAG, "read data length error ==>" + ret);
                 } else {
                     getVolume(buffer, ret);
-                    if (ret != buffer.length) {
+                    if (CaptureState.RESUME == state && ret != buffer.length) {
                         byte[] data = new byte[ret];
                         System.arraycopy(buffer, 0, data, 0, ret);
                         buffer = data;
                     }
-                    boolean su = audioFileWriter.writeData(buffer, 0, buffer.length);
-                    if (captureConfig.allowLog())
+                    boolean su = audioFileWriter.writeData(state, buffer, 0, buffer.length);
+                    if (captureConfig.allowLog() && CaptureState.RESUME == state)
                         Log.d(TAG, "Audio captured: " + buffer.length + "==" + su + "==" + ret);
                 }
             }
@@ -215,9 +213,13 @@ public class AudioRecordCapture extends Capture {
     }
 
     private void getVolume(byte[] buffer, int ret) {
-        short[] sa = new short[ret / 2];
-        ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(sa);
-        getVolume(sa, sa.length);
+        if (CaptureState.RESUME == state) {
+            short[] sa = new short[ret / 2];
+            ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(sa);
+            getVolume(sa, sa.length);
+        } else {
+            if (callback != null) callback.captureVolume(0d);
+        }
     }
 
     private void getVolume(short[] buffer, int ret) {

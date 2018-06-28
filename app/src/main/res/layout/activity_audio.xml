@@ -83,6 +83,16 @@
 
         <Button
             style="@style/main_button_style"
+            android:onClick="pause"
+            android:text="pause capture"/>
+
+        <Button
+            style="@style/main_button_style"
+            android:onClick="resume"
+            android:text="resume capture"/>
+
+        <Button
+            style="@style/main_button_style"
             android:onClick="stop"
             android:text="stop capture"/>
 

@@ -130,11 +130,6 @@ public class CaptureConfig {
             return this;
         }
 
-        public Builder setMode(String mode) {
-            config.setMode(mode);
-            return this;
-        }
-
         public Builder setName(String name){
             config.setName(name);
             return this;

@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -16,7 +15,6 @@ import com.hd.audiocapture.callback.CaptureStreamCallback;
 import com.hd.audiocapture.callback.PlaybackProgressCallback;
 
 import java.io.File;
-import java.util.Arrays;
 
 
 /**
@@ -70,6 +68,14 @@ public class AudioActivity extends AppCompatActivity implements RadioGroup.OnChe
         audioPresenter.start();
     }
 
+    public void pause(View view) {
+        audioPresenter.pause();
+    }
+
+    public void resume(View view) {
+        audioPresenter.resume();
+    }
+
     public void stop(View view) {
         audioPresenter.stop();
     }
@@ -82,7 +88,7 @@ public class AudioActivity extends AppCompatActivity implements RadioGroup.OnChe
     @Override
     public void progress(long currentDuration, long maxDuration) {
         runOnUiThread(() -> tvAudioProgress.setText("progress==> " + currentDuration + "===" + maxDuration//
-                                                            + "====" + (currentDuration * 1.0 / maxDuration) * 100 + "%"));
+                                          + "====" + (currentDuration * 1.0 / maxDuration) * 100 + "%"));
     }
 
     @SuppressLint("SetTextI18n")
@@ -111,6 +117,6 @@ public class AudioActivity extends AppCompatActivity implements RadioGroup.OnChe
 
     @Override
     public void captureContentByte(@NonNull byte[] content) {
-        Log.d("tag", "====" + Arrays.toString(content));
+//        Log.d("tag", "====" + Arrays.toString(content));
     }
 }

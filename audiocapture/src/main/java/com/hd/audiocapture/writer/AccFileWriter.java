@@ -6,6 +6,7 @@ import android.media.MediaFormat;
 import android.os.Build;
 
 import com.hd.audiocapture.CaptureConfig;
+import com.hd.audiocapture.CaptureState;
 import com.hd.audiocapture.callback.CaptureStreamCallback;
 
 import java.io.DataOutputStream;
@@ -62,7 +63,7 @@ public class AccFileWriter extends AudioFileWriter {
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     @Override
-    public boolean writeData(byte[] buffer, int offset, int count) {
+    public boolean writeData(CaptureState state, byte[] buffer, int offset, int count) {
         if (mediaCodec == null) {
             return false;
         }
@@ -75,30 +76,32 @@ public class AccFileWriter extends AudioFileWriter {
         }
         outputBufferIndex = mediaCodec.dequeueOutputBuffer(bufferInfo, 0);
         while (outputBufferIndex >= 0) {
-            //------------add acc header--------------
-            int outBitsSize = bufferInfo.size;
-            int outPacketSize = outBitsSize + 7; // 7 is ADTS size
-            byte[] outData = new byte[outPacketSize];
-            outputBuffer = mediaCodec.getOutputBuffers()[outputBufferIndex];
-            outputBuffer.position(bufferInfo.offset);
-            outputBuffer.limit(bufferInfo.offset + bufferInfo.size);
-            addADTStoPacket(outData, outPacketSize, captureConfig.getSamplingRate(), captureConfig.getChannelCount());
-            outputBuffer.get(outData, 7, outBitsSize);
-            try {
-                byte[] filterData = null;
-                if (captureConfig.getCaptureCallback() != null && captureConfig.getCaptureCallback() instanceof CaptureStreamCallback) {
-                    filterData = ((CaptureStreamCallback) captureConfig.getCaptureCallback()).filterContentByte(outData);
+            if (CaptureState.RESUME == state) {
+                //------------add acc header--------------
+                int outBitsSize = bufferInfo.size;
+                int outPacketSize = outBitsSize + 7; // 7 is ADTS size
+                byte[] outData = new byte[outPacketSize];
+                outputBuffer = mediaCodec.getOutputBuffers()[outputBufferIndex];
+                outputBuffer.position(bufferInfo.offset);
+                outputBuffer.limit(bufferInfo.offset + bufferInfo.size);
+                addADTStoPacket(outData, outPacketSize, captureConfig.getSamplingRate(), captureConfig.getChannelCount());
+                outputBuffer.get(outData, 7, outBitsSize);
+                try {
+                    byte[] filterData = null;
+                    if (captureConfig.getCaptureCallback() != null && captureConfig.getCaptureCallback() instanceof CaptureStreamCallback) {
+                        filterData = ((CaptureStreamCallback) captureConfig.getCaptureCallback()).filterContentByte(outData);
+                    }
+                    outData = filterData == null || filterData.length <= 0 ? outData : filterData;
+                    mDataOutputStream.write(outData);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                outData = filterData == null || filterData.length <= 0 ? outData : filterData;
-                mDataOutputStream.write(outData);
-            } catch (IOException e) {
-                e.printStackTrace();
+                if (captureConfig.getCaptureCallback() != null && captureConfig.getCaptureCallback() instanceof CaptureStreamCallback) {
+                    ((CaptureStreamCallback) captureConfig.getCaptureCallback()).captureContentByte(outData);
+                }
             }
             mediaCodec.releaseOutputBuffer(outputBufferIndex, false);
             outputBufferIndex = mediaCodec.dequeueOutputBuffer(bufferInfo, 0);
-            if (captureConfig.getCaptureCallback() != null && captureConfig.getCaptureCallback() instanceof CaptureStreamCallback) {
-                ((CaptureStreamCallback) captureConfig.getCaptureCallback()).captureContentByte(outData);
-            }
         }
         return true;
     }
