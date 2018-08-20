@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.text.format.DateUtils;
 import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -21,7 +22,7 @@ import java.io.File;
  * Created by hd on 2018/5/8 .
  */
 public class AudioActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener, CaptureStreamCallback, PlaybackProgressCallback {
-    private TextView tvAudioFilePath, tvAudioVolume, tvAudioState, tvAudioProgress;
+    private TextView tvAudioFilePath, tvAudioDuration, tvAudioVolume, tvAudioState, tvAudioProgress;
     private File file;
     private AudioPresenter audioPresenter;
 
@@ -34,6 +35,7 @@ public class AudioActivity extends AppCompatActivity implements RadioGroup.OnChe
 
     private void init() {
         tvAudioFilePath = findViewById(R.id.tvAudioFilePath);
+        tvAudioDuration = findViewById(R.id.tvAudioDuration);
         tvAudioVolume = findViewById(R.id.tvAudioVolume);
         tvAudioState = findViewById(R.id.tvAudioState);
         tvAudioProgress = findViewById(R.id.tvAudioProgress);
@@ -88,7 +90,7 @@ public class AudioActivity extends AppCompatActivity implements RadioGroup.OnChe
     @Override
     public void progress(long currentDuration, long maxDuration) {
         runOnUiThread(() -> tvAudioProgress.setText("progress==> " + currentDuration + "===" + maxDuration//
-                                          + "====" + (currentDuration * 1.0 / maxDuration) * 100 + "%"));
+                           + "====" + (currentDuration * 1.0 / maxDuration) * 100 + "%"));
     }
 
     @SuppressLint("SetTextI18n")
@@ -110,6 +112,12 @@ public class AudioActivity extends AppCompatActivity implements RadioGroup.OnChe
         runOnUiThread(() -> tvAudioVolume.setText("audioVolume==> " + volume));
     }
 
+    @SuppressLint("SetTextI18n")
+    @Override
+    public void captureTime(long duration) {
+        runOnUiThread(() -> tvAudioDuration.setText("audioDuration==> " + DateUtils.formatElapsedTime(duration)));
+    }
+
     @Override
     public byte[] filterContentByte(@NonNull byte[] content) {
         return new byte[0];
@@ -117,6 +125,6 @@ public class AudioActivity extends AppCompatActivity implements RadioGroup.OnChe
 
     @Override
     public void captureContentByte(@NonNull byte[] content) {
-//        Log.d("tag", "====" + Arrays.toString(content));
+        //Log.d("tag", "====" + Arrays.toString(content));
     }
 }

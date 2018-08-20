@@ -1,6 +1,7 @@
 package com.hd.audiocapture.capture;
 
 import android.content.Context;
+import android.media.MediaMetadataRetriever;
 import android.os.Environment;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
@@ -39,7 +40,7 @@ public abstract class Capture {
 
     private Timer timer;
 
-    ExecutorService mExecutorService = Executors.newFixedThreadPool(4);
+    ExecutorService mExecutorService = Executors.newFixedThreadPool(5);
 
     CaptureState state = CaptureState.PREPARE;
 
@@ -120,6 +121,7 @@ public abstract class Capture {
                 }
             }, duration);
         }
+        reportCaptureTime();
     }
 
     public void pauseCapture() {
@@ -174,5 +176,33 @@ public abstract class Capture {
                 break;
         }
         return postfix;
+    }
+
+    private void reportCaptureTime() {
+        callback.captureTime(0L);
+        mExecutorService.submit(() -> {
+            MediaMetadataRetriever metadataRetriever = new MediaMetadataRetriever();
+            try {
+                while (true) {
+                    try {
+                        SystemClock.sleep(1000);
+                        if (state == CaptureState.FAILED || state == CaptureState.COMPLETED) break;
+                        if(state == CaptureState.PAUSE)continue;
+                        reportTime(metadataRetriever);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            } finally {
+                reportTime(metadataRetriever);
+                metadataRetriever.release();
+            }
+        });
+    }
+
+    private void reportTime(MediaMetadataRetriever metadataRetriever) {
+        metadataRetriever.setDataSource(file.getAbsolutePath());
+        String strDuration = metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        callback.captureTime(Math.round(Math.ceil(Long.valueOf(strDuration)*1.0/1000)));
     }
 }

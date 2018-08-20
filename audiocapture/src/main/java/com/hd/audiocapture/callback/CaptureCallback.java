@@ -24,4 +24,11 @@ public interface CaptureCallback {
      */
     void captureVolume(double volume);
 
+    /**
+     * record file time
+     * Only when recording AAC files can you get accurate recording time in real time.
+     * @param duration the elapsed time in seconds.
+     */
+    void captureTime(long duration);
+
 }
