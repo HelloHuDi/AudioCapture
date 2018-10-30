@@ -41,6 +41,8 @@ public class AudioActivity extends AppCompatActivity implements RadioGroup.OnChe
         tvAudioProgress = findViewById(R.id.tvAudioProgress);
         ((RadioGroup) findViewById(R.id.rgAudio)).setOnCheckedChangeListener(this);
         audioPresenter = new AudioPresenter(this, this);
+//        boolean hasPermission=Utils.checkAudioPermission();
+//        Log.d("hd","是否具有权限："+hasPermission);
     }
 
     @Override
